@@ -25,7 +25,7 @@
     attribution: 'Imagerie &copy; Esri, Maxar, Earthstar Geographics'
   });
   const seamark = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
-    maxZoom: 19, maxNativeZoom: 18,
+    maxZoom: 19, maxNativeZoom: 18, zIndex: 5, // au-dessus de la bathymétrie
     attribution: 'Balisage &copy; <a href="https://www.openseamap.org">OpenSeaMap</a>'
   });
   const BASES = { plan: [osm], marine: [osm, seamark], sat: [sat] };
@@ -41,6 +41,46 @@
   document.querySelectorAll('[data-base]').forEach(b =>
     b.addEventListener('click', () => setBase(b.dataset.base)));
   setBase(store.get(KEY_BASE, 'plan'));
+
+  // =====================================================
+  // Profondeur d'eau : bathymétrie EMODnet (WMS, superposée au fond choisi)
+  // =====================================================
+  const KEY_DEPTH = 'peche.depth.v1';
+  const EMODNET_WMS = 'https://ows.emodnet-bathymetry.eu/wms';
+  const EMODNET_ATTR = 'Bathymétrie &copy; <a href="https://emodnet.ec.europa.eu">EMODnet</a>';
+  const wmsOpts = { format: 'image/png', transparent: true, version: '1.3.0', maxZoom: 19, attribution: EMODNET_ATTR };
+  const DEPTH = {
+    bathy:    L.tileLayer.wms(EMODNET_WMS, { ...wmsOpts, layers: 'emodnet:mean_multicolour', zIndex: 3, opacity: 0.7 }),
+    contours: L.tileLayer.wms(EMODNET_WMS, { ...wmsOpts, layers: 'emodnet:contours', zIndex: 4 })
+  };
+  const depthState = Object.assign({ on: [], opacity: 70 }, store.get(KEY_DEPTH, {}));
+  const saveDepth = () => store.set(KEY_DEPTH, depthState);
+
+  function applyDepth() {
+    Object.entries(DEPTH).forEach(([k, layer]) => {
+      const show = depthState.on.includes(k);
+      if (show && !map.hasLayer(layer)) layer.addTo(map);
+      if (!show && map.hasLayer(layer)) map.removeLayer(layer);
+    });
+    DEPTH.bathy.setOpacity(depthState.opacity / 100);
+  }
+  document.querySelectorAll('[data-depth]').forEach(cb => {
+    cb.checked = depthState.on.includes(cb.dataset.depth);
+    cb.addEventListener('change', () => {
+      const k = cb.dataset.depth;
+      depthState.on = depthState.on.filter(x => x !== k);
+      if (cb.checked) depthState.on.push(k);
+      saveDepth(); applyDepth();
+    });
+  });
+  const opac = $('depth-opacity');
+  opac.value = depthState.opacity;
+  opac.addEventListener('input', () => {
+    depthState.opacity = Number(opac.value);
+    DEPTH.bathy.setOpacity(depthState.opacity / 100);
+    saveDepth();
+  });
+  applyDepth();
 
   // =====================================================
   // Calques météo

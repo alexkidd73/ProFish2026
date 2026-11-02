@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b5d7a">
+  <title>Carnet de Pêche</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- Boutons flottants -->
+  <div class="fab-col">
+    <button id="btn-layers" class="round" aria-label="Calques">🗂️</button>
+    <button id="btn-locate" class="round" aria-label="Ma position">📍</button>
+  </div>
+  <div id="gps-status" class="gps-status">Recherche GPS…</div>
+  <button id="btn-catch" class="main-btn">🎣 J'ai pêché un poisson</button>
+
+  <!-- Panneau des calques -->
+  <aside id="layers-panel" class="sheet hidden" aria-label="Calques">
+    <div class="sheet-head">
+      <h2>Calques par poisson</h2>
+      <button class="close" data-close="layers-panel" aria-label="Fermer">✕</button>
+    </div>
+    <div class="sheet-actions">
+      <button id="layers-all" class="chip">Tout afficher</button>
+      <button id="layers-none" class="chip">Tout masquer</button>
+    </div>
+    <ul id="layers-list" class="layers-list"></ul>
+    <div class="sheet-actions">
+      <button id="btn-export" class="chip">⬇️ Exporter (JSON)</button>
+      <label class="chip">⬆️ Importer<input id="file-import" type="file" accept="application/json" hidden></label>
+    </div>
+  </aside>
+
+  <!-- Modale de capture -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-box">
+      <div class="sheet-head">
+        <h2 id="modal-title">Quel poisson ?</h2>
+        <button class="close" id="modal-close" aria-label="Fermer">✕</button>
+      </div>
+
+      <!-- Étape 1 : choix du poisson -->
+      <section id="step-pick">
+        <div id="fish-grid" class="fish-grid"></div>
+        <div id="custom-box" class="custom-box hidden">
+          <label for="custom-name">Nom du nouveau poisson</label>
+          <input id="custom-name" type="text" maxlength="40" placeholder="Ex : Black-bass" autocomplete="off">
+          <button id="custom-ok" class="primary">Ajouter et continuer</button>
+        </div>
+      </section>
+
+      <!-- Étape 2 : détails -->
+      <form id="step-form" class="hidden">
+        <div class="picked">
+          <span id="picked-badge" class="badge"></span>
+          <button type="button" id="back" class="link">Changer</button>
+        </div>
+        <div class="row">
+          <div>
+            <label for="f-size">Taille (cm)</label>
+            <input id="f-size" type="number" inputmode="decimal" min="0" step="0.1" placeholder="45">
+          </div>
+          <div>
+            <label for="f-weight">Poids (kg)</label>
+            <input id="f-weight" type="number" inputmode="decimal" min="0" step="0.01" placeholder="1.2">
+          </div>
+        </div>
+        <label for="f-photo">Photo</label>
+        <input id="f-photo" type="file" accept="image/*" capture="environment">
+        <img id="photo-preview" class="photo-preview hidden" alt="Aperçu">
+        <label for="f-note">Note (appât, spot…)</label>
+        <textarea id="f-note" rows="2" maxlength="300" placeholder="Optionnel"></textarea>
+        <p id="pos-info" class="hint"></p>
+        <button type="submit" class="primary">Enregistrer la prise</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

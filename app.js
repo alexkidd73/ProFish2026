@@ -48,10 +48,8 @@
   // ---------- Carte ----------
   const map = L.map('map', { zoomControl: false }).setView([48.8566, 2.3522], 6);
   L.control.zoom({ position: 'bottomleft' }).addTo(map);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-  }).addTo(map);
+  // Les fonds de carte (Plan / Marine / Satellite) et la météo sont gérés dans maps.js
+  window.fishMap = map;
 
   const groups = {};        // nom -> L.layerGroup
   function groupFor(name) {

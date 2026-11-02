@@ -7,6 +7,7 @@
   <title>Carnet de Pêche</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="weather.css">
 </head>
 <body>
   <div id="map"></div>
@@ -17,14 +18,33 @@
     <button id="btn-locate" class="round" aria-label="Ma position">📍</button>
   </div>
   <div id="gps-status" class="gps-status">Recherche GPS…</div>
+  <div id="wx-status" class="wx-status hidden" aria-live="polite"></div>
   <button id="btn-catch" class="main-btn">🎣 J'ai pêché un poisson</button>
 
   <!-- Panneau des calques -->
   <aside id="layers-panel" class="sheet hidden" aria-label="Calques">
     <div class="sheet-head">
-      <h2>Calques par poisson</h2>
+      <h2>Calques</h2>
       <button class="close" data-close="layers-panel" aria-label="Fermer">✕</button>
     </div>
+
+    <h3 class="sec">Fond de carte</h3>
+    <div class="seg" id="base-seg" role="group" aria-label="Fond de carte">
+      <button type="button" data-base="plan">🗺️ Plan</button>
+      <button type="button" data-base="marine">⚓ Marine</button>
+      <button type="button" data-base="sat">🛰️ Satellite</button>
+    </div>
+
+    <h3 class="sec">Météo &amp; mer</h3>
+    <ul class="layers-list" id="wx-list">
+      <li><label><input type="checkbox" data-wx="wind"><span>💨 Vent <small>(nœuds)</small></span></label></li>
+      <li><label><input type="checkbox" data-wx="temp"><span>🌡️ Température de l'air <small>(°C)</small></span></label></li>
+      <li><label><input type="checkbox" data-wx="sea"><span>🌊 Température de l'eau <small>(°C)</small></span></label></li>
+      <li><label><input type="checkbox" data-wx="current"><span>🧭 Courant marin <small>(nœuds)</small></span></label></li>
+    </ul>
+    <p class="hint">Données actuelles Open-Meteo. Température de l'eau et courant : en mer uniquement.</p>
+
+    <h3 class="sec">Poissons</h3>
     <div class="sheet-actions">
       <button id="layers-all" class="chip">Tout afficher</button>
       <button id="layers-none" class="chip">Tout masquer</button>
@@ -85,5 +105,6 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="app.js"></script>
+  <script src="maps.js"></script>
 </body>
 </html>

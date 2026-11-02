@@ -1,0 +1,34 @@
+/* Panneau : sections, sélecteur de fond, météo */
+.sec { margin: 14px 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.seg button {
+  padding: 11px 4px; border: 2px solid #e1e8ec; border-radius: 12px;
+  background: #fff; font-size: 14px; cursor: pointer; color: var(--text);
+}
+.seg button.on { border-color: var(--primary); background: #e8f4f8; font-weight: 700; }
+.layers-list small { color: var(--muted); }
+#wx-list li { padding: 10px 4px; }
+
+/* Bandeau d'état météo */
+.wx-status {
+  position: fixed; z-index: 500;
+  top: calc(52px + var(--safe-t)); left: 12px;
+  background: rgba(255,255,255,.92); padding: 5px 12px; border-radius: 16px;
+  font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  max-width: calc(100% - 90px); line-height: 1.35;
+}
+
+/* Marqueurs météo */
+.wx { pointer-events: none; display: flex; align-items: center; justify-content: center; }
+.wx-arrow { flex-direction: column; font-weight: 700; font-size: 12px; line-height: 1; }
+.wx-arrow svg { filter: drop-shadow(0 1px 1.5px rgba(0,0,0,.6)); display: block; }
+.wx-arrow span {
+  margin-top: 1px; padding: 1px 4px; border-radius: 8px;
+  background: rgba(255,255,255,.9); color: #111; font-size: 11px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.35);
+}
+.wx-pill {
+  padding: 3px 7px; border-radius: 12px; color: #fff; font-weight: 700;
+  font-size: 12px; white-space: nowrap; border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,.45);
+}

@@ -7,6 +7,8 @@ Application web statique (HTML / CSS / JS) pour enregistrer ses prises sur une c
 - Bouton « J'ai pêché un poisson » → modale de choix du poisson, puis taille, poids, photo, note
 - Poisson absent de la liste : option « Autre… » pour créer un nouveau type
 - Calques par type de poisson (affichage/masquage, compteur)
+- Fonds de carte : **Plan** (OpenStreetMap), **Marine** (OpenStreetMap + balisage OpenSeaMap), **Satellite** (Esri)
+- Calques météo en temps réel (Open-Meteo, sans clé API) : **vent** (nœuds), **température de l'air**, **température de l'eau**, **courant marin** (nœuds). Température de l'eau et courant n'existent qu'en mer.
 - Données stockées sur l'appareil (localStorage), export/import JSON
 - Interface adaptée aux smartphones
 

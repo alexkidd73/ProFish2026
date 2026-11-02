@@ -159,7 +159,7 @@
       <span class="boat-label">${BOAT_NAME}</span>
     </div>`
   });
-  // Marqueur de position : bateau ou petit point rouge (plus discret, pour mieux voir les prises)
+  // Marqueur de position : bateau ou point bleu (plus discret, pour mieux voir les prises)
   const KEY_ME = 'peche.meStyle.v1';
   let meStyle = load(KEY_ME, 'boat') === 'dot' ? 'dot' : 'boat';
   const dotIcon = () => L.divIcon({
@@ -169,8 +169,8 @@
   function paintMeButton() {
     const b = $('btn-boat');
     // Le bouton montre ce qu'un clic va afficher
-    b.textContent = meStyle === 'dot' ? '⛵' : '🔴';
-    const label = meStyle === 'dot' ? 'Afficher le bateau' : 'Remplacer le bateau par un point rouge';
+    b.textContent = meStyle === 'dot' ? '⛵' : '🔵';
+    const label = meStyle === 'dot' ? 'Afficher le bateau' : 'Remplacer le bateau par un point bleu';
     b.setAttribute('aria-label', label);
     b.title = label;
   }
@@ -179,7 +179,7 @@
     save(KEY_ME, meStyle);
     paintMeButton();
     if (meMarker) meMarker.setIcon(meIcon());
-    toast(meStyle === 'dot' ? 'Position : point rouge' : 'Position : bateau');
+    toast(meStyle === 'dot' ? 'Position : point bleu' : 'Position : bateau');
   });
   paintMeButton();
 

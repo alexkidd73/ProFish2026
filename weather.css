@@ -23,6 +23,16 @@
   max-width: calc(100% - 90px); line-height: 1.35;
 }
 
+/* Mon bateau */
+.boat { display: flex; flex-direction: column; align-items: center; pointer-events: none; }
+.boat-svg { display: block; filter: drop-shadow(0 2px 3px rgba(0,0,0,.45)); transition: transform .3s; }
+.boat-svg.flip { transform: scaleX(-1); }
+.boat-label {
+  margin-top: -2px; padding: 2px 8px; border-radius: 10px;
+  background: rgba(255,255,255,.95); color: #b91c1c; font-weight: 700;
+  font-size: 12px; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,.4);
+}
+
 /* Marqueurs météo */
 .wx { pointer-events: none; display: flex; align-items: center; justify-content: center; }
 .wx-arrow { flex-direction: column; font-weight: 700; font-size: 12px; line-height: 1; }

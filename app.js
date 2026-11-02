@@ -121,12 +121,33 @@
 
   // ---------- Géolocalisation ----------
   let me = null, meMarker = null, accCircle = null, firstFix = true;
+
+  // Mon bateau : illustration SVG (coque blanche à bande rouge, cabine jaune, nez de clown à la proue)
+  const BOAT_NAME = 'Le clown de Brescou';
+  const boatIcon = () => L.divIcon({
+    className: '',
+    iconSize: [150, 76], iconAnchor: [75, 30],
+    html: `<div class="boat">
+      <svg class="boat-svg" viewBox="0 0 64 44" width="64" height="44" aria-hidden="true">
+        <line x1="30" y1="4" x2="30" y2="20" stroke="#374151" stroke-width="1.6"/>
+        <path d="M30 4 L40 7 L30 10 Z" fill="#ef4444"/>
+        <path d="M20 20 L22 11 H36 L40 20 Z" fill="#fbbf24" stroke="#92400e" stroke-width="1.2" stroke-linejoin="round"/>
+        <rect x="25" y="13.5" width="5" height="4" rx="1" fill="#bae6fd" stroke="#92400e" stroke-width=".8"/>
+        <rect x="32" y="13.5" width="4" height="4" rx="1" fill="#bae6fd" stroke="#92400e" stroke-width=".8"/>
+        <path d="M4 20 H58 L51 33 Q49.5 35 46 35 H15 Q11 35 9 32 Z" fill="#fff" stroke="#1f2937" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M6.2 24 H55.8" stroke="#ef4444" stroke-width="3"/>
+        <circle cx="59" cy="20" r="4.2" fill="#ef4444" stroke="#fff" stroke-width="1.2"/>
+        <path d="M2 38 q4 -4 8 0 t8 0 t8 0 t8 0 t8 0 t8 0 t8 0" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span class="boat-label">${BOAT_NAME}</span>
+    </div>`
+  });
   function onPos(pos) {
     const { latitude: lat, longitude: lng, accuracy } = pos.coords;
     me = { lat, lng, accuracy };
     if (!meMarker) {
       meMarker = L.marker([lat, lng], {
-        icon: L.divIcon({ className: '', html: '<div class="me-dot"></div>', iconSize: [16, 16], iconAnchor: [8, 8] }),
+        icon: boatIcon(),
         interactive: false, zIndexOffset: 1000
       }).addTo(map);
       accCircle = L.circle([lat, lng], { radius: accuracy, weight: 1, color: '#2563eb', fillOpacity: .08 }).addTo(map);
@@ -135,6 +156,13 @@
       accCircle.setLatLng([lat, lng]).setRadius(accuracy);
     }
     $('gps-status').textContent = `GPS ±${Math.round(accuracy)} m`;
+    // Le bateau regarde vers la gauche ou la droite selon le cap (quand on avance)
+    const { heading, speed } = pos.coords;
+    if (heading != null && !isNaN(heading) && (speed || 0) > 0.5) {
+      const el = meMarker.getElement();
+      const svg = el && el.querySelector('.boat-svg');
+      if (svg) svg.classList.toggle('flip', heading > 180 && heading < 360);
+    }
     if (firstFix) { map.setView([lat, lng], 15); firstFix = false; }
   }
   function onPosErr(err) {

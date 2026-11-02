@@ -4,6 +4,7 @@ Application web statique (HTML / CSS / JS) pour enregistrer ses prises sur une c
 
 ## Fonctionnalités
 - Carte OpenStreetMap (Leaflet) centrée sur votre position GPS
+- Votre position est matérialisée par un petit bateau, « Le clown de Brescou », qui se retourne selon votre cap
 - Bouton « J'ai pêché un poisson » → modale de choix du poisson, puis taille, poids, photo, note
 - Poisson absent de la liste : option « Autre… » pour créer un nouveau type
 - Liste de poissons adaptée à la zone : **eau douce** ou **mer / océan** (détection automatique de la position, modifiable à la main). Les poissons personnalisés sont rattachés à la zone où ils sont ajoutés.

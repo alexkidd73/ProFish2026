@@ -493,6 +493,127 @@
     toast(`${c.fish} enregistré ! 🎉`);
   });
 
+  // ---------- Page « Mes prises » ----------
+  const page = $('catches-page');
+  const dayFmt = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const timeFmt = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const fmtCoord = (v, pos, neg) => `${Math.abs(v).toFixed(5)}° ${v >= 0 ? pos : neg}`;
+
+  function catchCard(c, d) {
+    const facts = [];
+    if (c.size) facts.push(`📏 ${c.size} cm`);
+    if (c.weight) facts.push(`⚖️ ${c.weight} kg`);
+    if (c.depth) facts.push(`🌊 ${c.depth} m${c.depthSrc === 'carte' ? ' (carte)' : ''}`);
+    const l = c.lure;
+    const lureParts = l ? [l.type, l.color, l.weight ? `${l.weight} g` : null].filter(Boolean) : [];
+    const rows = [];
+    if (lureParts.length) rows.push(`🪝 Leurre : ${esc(lureParts.join(' · '))}`);
+    if (c.bait) rows.push(`🦐 Appât : ${esc(c.bait)}`);
+    if (c.water) rows.push(c.water === 'sea' ? '🌊 Mer / océan' : '🏞️ Eau douce');
+    if (c.note) rows.push(`📝 ${esc(c.note)}`);
+    const lat = Number(c.lat).toFixed(5), lng = Number(c.lng).toFixed(5);
+    return `<article class="card" data-id="${esc(c.id)}">
+      <div class="card-top">
+        ${c.photo ? `<img class="thumb" src="${c.photo}" alt="Photo : ${esc(c.fish)}">` : ''}
+        <div class="card-main">
+          <div class="card-title">
+            <span class="dot" style="background:${colorOf(c.fish)}"></span>
+            <strong>${esc(c.fish)}</strong>
+            <span class="time">${esc(timeFmt.format(d))}</span>
+          </div>
+          ${facts.length ? `<div class="facts">${facts.join(' · ')}</div>` : ''}
+        </div>
+      </div>
+      ${rows.map(r => `<div class="row-line">${r}</div>`).join('')}
+      <div class="gps">📍 ${fmtCoord(Number(c.lat), 'N', 'S')}, ${fmtCoord(Number(c.lng), 'E', 'O')}</div>
+      <div class="card-actions">
+        <button type="button" data-act="map">🗺️ Voir sur la carte</button>
+        <button type="button" data-act="copy" data-coords="${lat}, ${lng}">📋 Copier GPS</button>
+        <a href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}" target="_blank" rel="noopener">↗️ Ouvrir dans Maps</a>
+        <button type="button" data-act="del" class="danger" aria-label="Supprimer">🗑️</button>
+      </div>
+    </article>`;
+  }
+
+  function renderCatchesPage() {
+    const sel = $('page-filter');
+    const current = sel.value;
+    const names = [...new Set(catches.map(c => c.fish))].sort((a, b) => a.localeCompare(b, 'fr'));
+    sel.innerHTML = '<option value="">Tous les poissons</option>' +
+      names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+    sel.value = names.includes(current) ? current : '';
+
+    const list = catches
+      .filter(c => !sel.value || c.fish === sel.value)
+      .sort((a, b) => new Date(b.date) - new Date(a.date)); // plus récent d'abord
+    $('page-count').textContent = `(${list.length})`;
+
+    const box = $('page-list');
+    if (!list.length) { box.innerHTML = '<p class="empty">Aucune prise à afficher.</p>'; return; }
+    let html = '', lastDay = '';
+    list.forEach(c => {
+      const d = new Date(c.date);
+      const day = capitalize(dayFmt.format(d));
+      if (day !== lastDay) { html += `<h3 class="day">${esc(day)}</h3>`; lastDay = day; }
+      html += catchCard(c, d);
+    });
+    box.innerHTML = html;
+  }
+
+  let pagePushed = false;
+  function openCatchesPage() {
+    renderCatchesPage();
+    page.classList.remove('hidden');
+    page.scrollTop = 0;
+    pagePushed = location.hash !== '#prises';
+    if (pagePushed) history.pushState(null, '', '#prises'); // le bouton « retour » du téléphone ferme la page
+  }
+  function closeCatchesPage() {
+    page.classList.add('hidden');
+    if (location.hash === '#prises') {
+      if (pagePushed) { pagePushed = false; history.back(); }
+      else history.replaceState(null, '', location.pathname + location.search);
+    }
+  }
+  window.addEventListener('popstate', () => {
+    if (location.hash === '#prises') { renderCatchesPage(); page.classList.remove('hidden'); }
+    else page.classList.add('hidden');
+  });
+
+  function showOnMap(id) {
+    const c = catches.find(x => x.id === id);
+    if (!c) return;
+    closeCatchesPage();
+    if (hidden.has(c.fish)) { toggleLayer(c.fish, true); renderLayers(); }
+    map.setView([c.lat, c.lng], Math.max(map.getZoom(), 17));
+    groupFor(c.fish).eachLayer(m => {
+      if (m.catchId === id) setTimeout(() => m.openPopup(), 250);
+    });
+  }
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); toast('Coordonnées copiées'); }
+    catch { window.prompt('Copiez les coordonnées :', text); }
+  }
+
+  $('btn-list').addEventListener('click', openCatchesPage);
+  $('page-back').addEventListener('click', closeCatchesPage);
+  $('page-filter').addEventListener('change', renderCatchesPage);
+  $('page-list').addEventListener('click', (e) => {
+    const thumb = e.target.closest('.thumb');
+    if (thumb) { thumb.classList.toggle('big'); return; }
+    const btn = e.target.closest('button[data-act]');
+    if (!btn) return;
+    const id = btn.closest('.card').dataset.id;
+    if (btn.dataset.act === 'map') showOnMap(id);
+    else if (btn.dataset.act === 'copy') copyText(btn.dataset.coords);
+    else if (btn.dataset.act === 'del' && confirm('Supprimer cette prise ?')) {
+      deleteCatch(id);
+      renderCatchesPage();
+    }
+  });
+  if (location.hash === '#prises') openCatchesPage();
+
   // ---------- Init ----------
   rebuildMarkers();
   renderLayers();

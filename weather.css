@@ -28,6 +28,48 @@ select:focus { outline: none; border-color: var(--primary); }
   max-width: calc(100% - 90px); line-height: 1.35;
 }
 
+/* Page « Mes prises » */
+.page {
+  position: fixed; inset: 0; z-index: 800; background: #f1f5f8;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(24px + var(--safe-b));
+}
+.page-head {
+  position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 10px;
+  padding: calc(10px + var(--safe-t)) 12px 10px; background: var(--primary); color: #fff;
+}
+.page-head h2 { margin: 0; font-size: 19px; }
+.page-head .count { font-weight: 400; opacity: .85; font-size: 15px; }
+.back {
+  width: 40px; height: 40px; border: none; border-radius: 50%;
+  background: rgba(255,255,255,.18); color: #fff; font-size: 20px; cursor: pointer;
+}
+.page-tools, .page-list { max-width: 720px; margin: 0 auto; padding: 12px 12px 0; }
+.page-list { padding-top: 0; }
+.day { margin: 18px 4px 8px; font-size: 14px; color: var(--muted); }
+.card {
+  background: #fff; border-radius: 14px; padding: 12px; margin-bottom: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.12);
+}
+.card-top { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+.thumb { width: 76px; height: 76px; border-radius: 10px; object-fit: cover; flex: none; cursor: zoom-in; }
+.thumb.big { width: 100%; height: auto; max-height: 340px; cursor: zoom-out; }
+.card-main { flex: 1; min-width: 0; }
+.card-title { display: flex; align-items: center; gap: 8px; font-size: 17px; }
+.card-title .time { margin-left: auto; color: var(--muted); font-size: 14px; }
+.facts { margin-top: 6px; font-size: 15px; }
+.row-line { margin-top: 6px; font-size: 14px; }
+.gps {
+  margin-top: 8px; padding: 6px 10px; background: #eef6fa; border-radius: 8px;
+  font-size: 13px; font-variant-numeric: tabular-nums;
+}
+.card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.card-actions button, .card-actions a {
+  padding: 8px 12px; border: none; border-radius: 18px; background: #eef3f6;
+  color: var(--text); font-size: 13px; text-decoration: none; cursor: pointer;
+}
+.card-actions .danger { background: #fee2e2; color: #b91c1c; margin-left: auto; }
+
 /* Mon bateau */
 .boat { display: flex; flex-direction: column; align-items: center; pointer-events: none; }
 .boat-svg { display: block; filter: drop-shadow(0 2px 3px rgba(0,0,0,.45)); transition: transform .3s; }

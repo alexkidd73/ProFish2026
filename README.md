@@ -11,6 +11,7 @@ Application web statique (HTML / CSS / JS) pour enregistrer ses prises sur une c
 - Leurre utilisé : type (Maidai, Tenya, Turluttes), couleur et poids en grammes. Pour ajouter un type de leurre, complétez la constante `LURES` dans `app.js`.
 - Appât : gambas, calamars ou sardines (options du menu `#f-bait` dans `index.html`)
 - Profondeur de la prise : saisie du sondeur, avec suggestion de la profondeur de la carte (EMODnet) quand elle est disponible
+- Page **Mes prises** (bouton 📋) : toutes les prises de la plus récente à la plus ancienne, groupées par jour, avec détails, coordonnées GPS, copie des coordonnées, ouverture dans Maps, affichage sur la carte et filtre par poisson
 - Calques par type de poisson (affichage/masquage, compteur)
 - Fonds de carte : **Plan** (OpenStreetMap), **Marine** (OpenStreetMap + balisage OpenSeaMap), **Satellite** (Esri)
 - Calques de **profondeur d'eau** (bathymétrie EMODnet : fonds marins en couleurs + isobathes), superposables à n'importe quel fond. Indicatif, ne pas utiliser pour la navigation.

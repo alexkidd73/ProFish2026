@@ -87,9 +87,9 @@
 
   function lureLine(c) {
     const l = c.lure;
-    if (!l) return '';
-    const parts = [l.type, l.color, l.weight ? `${l.weight} g` : null].filter(Boolean);
-    return parts.length ? `<p>🪝 ${esc(parts.join(' · '))}</p>` : '';
+    const parts = l ? [l.type, l.color, l.weight ? `${l.weight} g` : null].filter(Boolean) : [];
+    return (parts.length ? `<p>🪝 ${esc(parts.join(' · '))}</p>` : '') +
+           (c.bait ? `<p>🦐 Appât : ${esc(c.bait)}</p>` : '');
   }
 
   function popupHtml(c) {
@@ -311,6 +311,14 @@
       $('lure-colors').appendChild(o);
     });
   })();
+  // ----- Appât -----
+  const BAITS = ['Gambas', 'Calamars', 'Sardines']; // liste extensible
+  BAITS.forEach(n => {
+    const o = document.createElement('option');
+    o.value = n; o.textContent = n;
+    $('f-bait').appendChild(o);
+  });
+
   function lureInfo() {
     const type = $('f-lure').value || null;
     const color = $('f-lure-color').value.trim() || null;
@@ -477,7 +485,7 @@
       fish: selectedFish,
       lat: pos.lat, lng: pos.lng,
       size: num('f-size'), weight: num('f-weight'),
-      ...depthInfo(), water: waterKind, lure: lureInfo(),
+      ...depthInfo(), water: waterKind, lure: lureInfo(), bait: $('f-bait').value || null,
       photo: photoData, note: $('f-note').value.trim(),
       date: new Date().toISOString()
     };

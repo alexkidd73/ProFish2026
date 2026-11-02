@@ -42,6 +42,13 @@
   let customFish = load(KEY_CUSTOM, []).map(normCustom);
   let hidden = new Set(load(KEY_HIDDEN, []));
 
+  // Icône selon l'espèce : 🐙 poulpe, 🦑 calamar / seiche, 🐟 sinon
+  const iconOf = (name) => {
+    const n = String(name).toLowerCase();
+    if (n.includes('poulpe')) return '🐙';
+    if (n.includes('calamar') || n.includes('seiche') || n.includes('encornet') || n.includes('calmar')) return '🦑';
+    return '🐟';
+  };
   const allFish = () => [...DEFAULT_FISH, ...customFish.map(f => f.name)];
   const colorOf = (name) => {
     const i = allFish().indexOf(name);
@@ -78,7 +85,7 @@
   function addMarker(c) {
     const icon = L.divIcon({
       className: '',
-      html: `<div class="fish-marker" style="background:${colorOf(c.fish)}">🐟</div>`,
+      html: `<div class="fish-marker" style="background:${colorOf(c.fish)}">${iconOf(c.fish)}</div>`,
       iconSize: [34, 34], iconAnchor: [17, 17], popupAnchor: [0, -16]
     });
     const m = L.marker([c.lat, c.lng], { icon });
@@ -365,7 +372,7 @@
     fishForKind(waterKind).forEach(name => {
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'fish-btn';
-      b.innerHTML = `<span class="ico" style="background:${colorOf(name)}33">🐟</span><span>${esc(name)}</span>`;
+      b.innerHTML = `<span class="ico" style="background:${colorOf(name)}33">${iconOf(name)}</span><span>${esc(name)}</span>`;
       b.addEventListener('click', () => pickFish(name));
       grid.appendChild(b);
     });

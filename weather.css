@@ -8,6 +8,11 @@
 .seg button.on { border-color: var(--primary); background: #e8f4f8; font-weight: 700; }
 .layers-list small { color: var(--muted); }
 .range { font-weight: 500; font-size: 13px; color: var(--muted); margin: 6px 0 0; }
+select {
+  width: 100%; padding: 12px; font-size: 16px; font-family: inherit;
+  border: 1.5px solid #cfd9de; border-radius: 10px; background: #fff; color: var(--text);
+}
+select:focus { outline: none; border-color: var(--primary); }
 .seg.two { grid-template-columns: repeat(2, 1fr); }
 .depth-row { align-items: end; }
 .depth-row .chip { width: 100%; padding: 13px 8px; }

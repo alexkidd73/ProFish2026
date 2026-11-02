@@ -116,6 +116,19 @@
           </div>
         </div>
         <p id="depth-hint" class="hint"></p>
+        <label for="f-lure">Leurre utilisé</label>
+        <select id="f-lure"><option value="">— Non précisé —</option></select>
+        <div class="row">
+          <div>
+            <label for="f-lure-color">Couleur du leurre</label>
+            <input id="f-lure-color" type="text" maxlength="30" list="lure-colors" placeholder="Orange" autocomplete="off">
+            <datalist id="lure-colors"></datalist>
+          </div>
+          <div>
+            <label for="f-lure-weight">Poids du leurre (g)</label>
+            <input id="f-lure-weight" type="number" inputmode="decimal" min="0" step="1" placeholder="60">
+          </div>
+        </div>
         <label for="f-photo">Photo</label>
         <input id="f-photo" type="file" accept="image/*" capture="environment">
         <img id="photo-preview" class="photo-preview hidden" alt="Aperçu">

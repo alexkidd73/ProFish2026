@@ -85,6 +85,13 @@
     groupFor(c.fish).addLayer(m);
   }
 
+  function lureLine(c) {
+    const l = c.lure;
+    if (!l) return '';
+    const parts = [l.type, l.color, l.weight ? `${l.weight} g` : null].filter(Boolean);
+    return parts.length ? `<p>🪝 ${esc(parts.join(' · '))}</p>` : '';
+  }
+
   function popupHtml(c) {
     const d = new Date(c.date).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' });
     const bits = [];
@@ -96,6 +103,7 @@
     div.innerHTML = `<h3>${esc(c.fish)}</h3>
       <p>${esc(d)}</p>
       ${bits.length ? `<p>${bits.join(' · ')}</p>` : ''}
+      ${lureLine(c)}
       ${c.note ? `<p>${esc(c.note)}</p>` : ''}
       ${c.photo ? `<img src="${c.photo}" alt="Photo">` : ''}
       <button type="button">🗑️ Supprimer</button>`;
@@ -278,6 +286,39 @@
     } catch { return null; }
   }
 
+  // ----- Leurre utilisé -----
+  const LURES = ['Maidai', 'Tenya', 'Turluttes']; // liste extensible : ajoutez simplement un nom
+  const LURE_COLORS = [
+    'Orange', 'Rose', 'Rouge', 'Vert', 'Jaune', 'Blanc', 'Noir', 'Bleu',
+    'Violet', 'Doré', 'Argenté', 'Phosphorescent', 'Naturel'
+  ];
+  (function initLureUI() {
+    const sel = $('f-lure');
+    LURES.forEach(n => {
+      const o = document.createElement('option');
+      o.value = n; o.textContent = n;
+      sel.appendChild(o);
+    });
+    // Suggestions de couleurs : liste de base + couleurs déjà utilisées
+    const used = catches.map(c => c.lure && c.lure.color).filter(Boolean);
+    const seen = new Set();
+    [...LURE_COLORS, ...used].forEach(col => {
+      const k = col.toLowerCase();
+      if (seen.has(k)) return;
+      seen.add(k);
+      const o = document.createElement('option');
+      o.value = col;
+      $('lure-colors').appendChild(o);
+    });
+  })();
+  function lureInfo() {
+    const type = $('f-lure').value || null;
+    const color = $('f-lure-color').value.trim() || null;
+    const w = parseFloat($('f-lure-weight').value);
+    const weight = isFinite(w) && w > 0 ? w : null;
+    return (type || color || weight) ? { type, color, weight } : null;
+  }
+
   // ----- Profondeur de la prise -----
   let depthEdited = false, depthFromMap = null;
   async function fetchMapDepth(lat, lng) {
@@ -436,7 +477,7 @@
       fish: selectedFish,
       lat: pos.lat, lng: pos.lng,
       size: num('f-size'), weight: num('f-weight'),
-      ...depthInfo(), water: waterKind,
+      ...depthInfo(), water: waterKind, lure: lureInfo(),
       photo: photoData, note: $('f-note').value.trim(),
       date: new Date().toISOString()
     };

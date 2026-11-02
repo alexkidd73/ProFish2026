@@ -12,7 +12,9 @@
       'Bar (loup)', 'Daurade royale', 'Maquereau', 'Lieu jaune', 'Sole', 'Merlan',
       'Pageot', 'Rouget', 'Congre', 'Mulet', 'Sar', 'Turbot', 'Raie', 'Vive',
       'Orphie', 'Chinchard', 'Bonite', 'Thon rouge', 'Thon jaune', 'Mahi-mahi',
-      'Barracuda', 'Mérou', 'Vivaneau', 'Carangue', 'Espadon', 'Marlin'
+      'Barracuda', 'Mérou', 'Vivaneau', 'Carangue', 'Espadon', 'Marlin',
+      // Céphalopodes
+      'Calamar', 'Seiche', 'Poulpe'
     ]
   };
   const DEFAULT_FISH = [...FISH.fresh, ...FISH.sea];

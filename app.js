@@ -159,12 +159,36 @@
       <span class="boat-label">${BOAT_NAME}</span>
     </div>`
   });
+  // Marqueur de position : bateau ou petit point rouge (plus discret, pour mieux voir les prises)
+  const KEY_ME = 'peche.meStyle.v1';
+  let meStyle = load(KEY_ME, 'boat') === 'dot' ? 'dot' : 'boat';
+  const dotIcon = () => L.divIcon({
+    className: '', html: '<div class="me-dot"></div>', iconSize: [18, 18], iconAnchor: [9, 9]
+  });
+  const meIcon = () => (meStyle === 'dot' ? dotIcon() : boatIcon());
+  function paintMeButton() {
+    const b = $('btn-boat');
+    // Le bouton montre ce qu'un clic va afficher
+    b.textContent = meStyle === 'dot' ? '⛵' : '🔴';
+    const label = meStyle === 'dot' ? 'Afficher le bateau' : 'Remplacer le bateau par un point rouge';
+    b.setAttribute('aria-label', label);
+    b.title = label;
+  }
+  $('btn-boat').addEventListener('click', () => {
+    meStyle = meStyle === 'dot' ? 'boat' : 'dot';
+    save(KEY_ME, meStyle);
+    paintMeButton();
+    if (meMarker) meMarker.setIcon(meIcon());
+    toast(meStyle === 'dot' ? 'Position : point rouge' : 'Position : bateau');
+  });
+  paintMeButton();
+
   function onPos(pos) {
     const { latitude: lat, longitude: lng, accuracy } = pos.coords;
     me = { lat, lng, accuracy };
     if (!meMarker) {
       meMarker = L.marker([lat, lng], {
-        icon: boatIcon(),
+        icon: meIcon(),
         interactive: false, zIndexOffset: 1000
       }).addTo(map);
       accCircle = L.circle([lat, lng], { radius: accuracy, weight: 1, color: '#2563eb', fillOpacity: .08 }).addTo(map);

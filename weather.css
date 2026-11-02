@@ -8,6 +8,9 @@
 .seg button.on { border-color: var(--primary); background: #e8f4f8; font-weight: 700; }
 .layers-list small { color: var(--muted); }
 .range { font-weight: 500; font-size: 13px; color: var(--muted); margin: 6px 0 0; }
+.seg.two { grid-template-columns: repeat(2, 1fr); }
+.depth-row { align-items: end; }
+.depth-row .chip { width: 100%; padding: 13px 8px; }
 .range input[type=range] { width: 100%; accent-color: var(--primary); margin: 6px 0 0; }
 #wx-list li { padding: 10px 4px; }
 

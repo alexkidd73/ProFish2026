@@ -2,10 +2,20 @@
 (() => {
   'use strict';
 
-  const DEFAULT_FISH = [
-    'Brochet', 'Sandre', 'Perche', 'Truite', 'Carpe', 'Black-bass',
-    'Silure', 'Gardon', 'Brème', 'Tanche', 'Anguille', 'Barbeau'
-  ];
+  // Poissons proposés selon la zone : eau douce ou mer / océan
+  const FISH = {
+    fresh: [
+      'Brochet', 'Sandre', 'Perche', 'Truite', 'Carpe', 'Black-bass',
+      'Silure', 'Gardon', 'Brème', 'Tanche', 'Anguille', 'Barbeau'
+    ],
+    sea: [
+      'Bar (loup)', 'Daurade royale', 'Maquereau', 'Lieu jaune', 'Sole', 'Merlan',
+      'Pageot', 'Rouget', 'Congre', 'Mulet', 'Sar', 'Turbot', 'Raie', 'Vive',
+      'Orphie', 'Chinchard', 'Bonite', 'Thon rouge', 'Thon jaune', 'Mahi-mahi',
+      'Barracuda', 'Mérou', 'Vivaneau', 'Carangue', 'Espadon', 'Marlin'
+    ]
+  };
+  const DEFAULT_FISH = [...FISH.fresh, ...FISH.sea];
   const PALETTE = [
     '#e11d48', '#f97316', '#eab308', '#16a34a', '#0d9488', '#0ea5e9',
     '#4f46e5', '#9333ea', '#db2777', '#78716c', '#65a30d', '#0891b2'
@@ -13,6 +23,7 @@
   const KEY_CATCHES = 'peche.catches.v1';
   const KEY_CUSTOM = 'peche.customFish.v1';
   const KEY_HIDDEN = 'peche.hiddenLayers.v1';
+  const KEY_WATER = 'peche.water.v1';
 
   // ---------- Stockage ----------
   const load = (k, def) => {
@@ -24,10 +35,12 @@
   };
 
   let catches = load(KEY_CATCHES, []);
-  let customFish = load(KEY_CUSTOM, []);
+  // Poissons personnalisés : { name, kind: 'fresh' | 'sea' | 'any' } (anciens enregistrements = texte → 'any')
+  const normCustom = (f) => (typeof f === 'string' ? { name: f, kind: 'any' } : f);
+  let customFish = load(KEY_CUSTOM, []).map(normCustom);
   let hidden = new Set(load(KEY_HIDDEN, []));
 
-  const allFish = () => [...DEFAULT_FISH, ...customFish];
+  const allFish = () => [...DEFAULT_FISH, ...customFish.map(f => f.name)];
   const colorOf = (name) => {
     const i = allFish().indexOf(name);
     return PALETTE[(i < 0 ? name.length : i) % PALETTE.length];
@@ -77,6 +90,7 @@
     const bits = [];
     if (c.size) bits.push(`📏 ${c.size} cm`);
     if (c.weight) bits.push(`⚖️ ${c.weight} kg`);
+    if (c.depth) bits.push(`🌊 prof. ${c.depth} m${c.depthSrc === 'carte' ? ' (carte)' : ''}`);
     const div = document.createElement('div');
     div.className = 'popup';
     div.innerHTML = `<h3>${esc(c.fish)}</h3>
@@ -190,7 +204,9 @@
       const data = JSON.parse(await f.text());
       const ids = new Set(catches.map(c => c.id));
       (data.catches || []).forEach(c => { if (!ids.has(c.id)) catches.push(c); });
-      (data.customFish || []).forEach(n => { if (!customFish.includes(n) && !DEFAULT_FISH.includes(n)) customFish.push(n); });
+      (data.customFish || []).map(normCustom).forEach(f => {
+        if (f && f.name && !allFish().includes(f.name)) customFish.push(f);
+      });
       save(KEY_CATCHES, catches); save(KEY_CUSTOM, customFish);
       rebuildMarkers(); renderLayers(); toast('Import terminé.');
     } catch { toast('Fichier invalide.'); }
@@ -201,10 +217,79 @@
   const modal = $('modal');
   let selectedFish = null, photoData = null;
 
+  // ----- Zone : eau douce / mer -----
+  let waterKind = load(KEY_WATER, 'fresh') === 'sea' ? 'sea' : 'fresh';
+  let waterUserPicked = false;
+  const here = () => (me ? { lat: me.lat, lng: me.lng } : map.getCenter());
+  const fishForKind = (kind) => [
+    ...FISH[kind],
+    ...customFish.filter(f => f.kind === kind || f.kind === 'any').map(f => f.name)
+  ];
+  function paintWater() {
+    document.querySelectorAll('[data-water]').forEach(b =>
+      b.classList.toggle('on', b.dataset.water === waterKind));
+  }
+  document.querySelectorAll('[data-water]').forEach(b => b.addEventListener('click', () => {
+    waterKind = b.dataset.water;
+    waterUserPicked = true;
+    save(KEY_WATER, waterKind);
+    paintWater();
+    $('custom-box').classList.add('hidden');
+    renderFishGrid();
+  }));
+
+  // Mer détectée si une cellule du modèle marin Open-Meteo existe à moins de ~10 km
+  async function detectSea(lat, lng) {
+    try {
+      const r = await fetch('https://marine-api.open-meteo.com/v1/marine?latitude=' + lat.toFixed(4) +
+        '&longitude=' + lng.toFixed(4) + '&current=sea_surface_temperature');
+      if (!r.ok) return null;
+      const j = await r.json();
+      const near = Math.abs(j.latitude - lat) < 0.1 && Math.abs(j.longitude - lng) < 0.1;
+      return !!(near && j.current && j.current.sea_surface_temperature != null);
+    } catch { return null; }
+  }
+
+  // ----- Profondeur de la prise -----
+  let depthEdited = false, depthFromMap = null;
+  async function fetchMapDepth(lat, lng) {
+    try {
+      const r = await fetch('https://rest.emodnet-bathymetry.eu/depth_sample?geom=POINT(' +
+        lng.toFixed(5) + '%20' + lat.toFixed(5) + ')');
+      if (!r.ok) return null;
+      const j = await r.json();
+      const o = Array.isArray(j) ? j[0] : j;
+      const v = o && (o.avg ?? o.value ?? o.depth);
+      return typeof v === 'number' && v < 0 ? Math.round(-v * 10) / 10 : null; // altitude négative = profondeur
+    } catch { return null; }
+  }
+  async function initDepth() {
+    depthEdited = false; depthFromMap = null;
+    const hint = $('depth-hint');
+    hint.textContent = 'Saisissez la profondeur de votre sondeur (en mètres).';
+    const p = here();
+    const d = await fetchMapDepth(p.lat, p.lng);
+    if (d == null || modal.classList.contains('hidden')) return;
+    depthFromMap = d;
+    hint.textContent = `Profondeur de la carte ici : ~${d} m (indicatif). Corrigez avec votre sondeur si besoin.`;
+    if (!$('f-depth').value) $('f-depth').value = d;
+  }
+  function depthInfo() {
+    const v = parseFloat($('f-depth').value);
+    if (!isFinite(v) || v <= 0) return { depth: null, depthSrc: null };
+    return { depth: v, depthSrc: (!depthEdited && v === depthFromMap) ? 'carte' : 'sondeur' };
+  }
+  $('f-depth').addEventListener('input', () => { depthEdited = true; });
+  $('depth-auto').addEventListener('click', () => {
+    if (depthFromMap == null) { toast('Profondeur de la carte indisponible ici.'); return; }
+    $('f-depth').value = depthFromMap;
+    depthEdited = false;
+  });
+
   function renderFishGrid() {
     const grid = $('fish-grid');
     grid.innerHTML = '';
-    allFish().forEach(name => {
+    fishForKind(waterKind).forEach(name => {
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'fish-btn';
       b.innerHTML = `<span class="ico" style="background:${colorOf(name)}33">🐟</span><span>${esc(name)}</span>`;
@@ -230,8 +315,25 @@
     $('step-form').classList.add('hidden');
     $('step-pick').classList.remove('hidden');
     $('modal-title').textContent = 'Quel poisson ?';
+    waterUserPicked = false;
+    paintWater();
     renderFishGrid();
     modal.classList.remove('hidden');
+
+    // Détection automatique de la zone (l'utilisateur peut toujours corriger)
+    const hint = $('water-hint');
+    hint.textContent = '📍 Détection de la zone…';
+    const p = here();
+    detectSea(p.lat, p.lng).then(sea => {
+      if (sea === null) { hint.textContent = 'Zone non détectée : choisissez eau douce ou mer.'; return; }
+      hint.textContent = sea ? '📍 Zone détectée : mer / océan' : '📍 Zone détectée : eau douce';
+      const detected = sea ? 'sea' : 'fresh';
+      if (!waterUserPicked && detected !== waterKind) {
+        waterKind = detected;
+        paintWater();
+        renderFishGrid();
+      }
+    });
   }
   const closeModal = () => modal.classList.add('hidden');
 
@@ -244,6 +346,7 @@
     $('pos-info').textContent = me
       ? `📍 Position GPS actuelle (±${Math.round(me.accuracy)} m)`
       : '📍 GPS indisponible : le centre de la carte sera utilisé.';
+    initDepth();
   }
 
   $('btn-catch').addEventListener('click', openModal);
@@ -261,7 +364,7 @@
     const existing = allFish().find(n => n.toLowerCase() === raw.toLowerCase());
     if (existing) return pickFish(existing);
     const name = raw.charAt(0).toUpperCase() + raw.slice(1);
-    customFish.push(name);
+    customFish.push({ name, kind: waterKind });
     save(KEY_CUSTOM, customFish);
     pickFish(name);
   }
@@ -305,6 +408,7 @@
       fish: selectedFish,
       lat: pos.lat, lng: pos.lng,
       size: num('f-size'), weight: num('f-weight'),
+      ...depthInfo(), water: waterKind,
       photo: photoData, note: $('f-note').value.trim(),
       date: new Date().toISOString()
     };

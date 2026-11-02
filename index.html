@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#0b5d7a">
   <title>Carnet de Pêche</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="weather.css">
+  <link rel="stylesheet" href="style.css?v=20261102b">
+  <link rel="stylesheet" href="weather.css?v=20261102b">
 </head>
 <body>
   <div id="map"></div>
@@ -130,7 +130,12 @@
           </div>
         </div>
         <label for="f-bait">Appât</label>
-        <select id="f-bait"><option value="">— Non précisé —</option></select>
+        <select id="f-bait">
+          <option value="">— Non précisé —</option>
+          <option value="Gambas">Gambas</option>
+          <option value="Calamars">Calamars</option>
+          <option value="Sardines">Sardines</option>
+        </select>
         <label for="f-photo">Photo</label>
         <input id="f-photo" type="file" accept="image/*" capture="environment">
         <img id="photo-preview" class="photo-preview hidden" alt="Aperçu">
@@ -145,7 +150,7 @@
   <div id="toast" class="toast hidden"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js"></script>
-  <script src="maps.js"></script>
+  <script src="app.js?v=20261102b"></script>
+  <script src="maps.js?v=20261102b"></script>
 </body>
 </html>

@@ -311,13 +311,7 @@
       $('lure-colors').appendChild(o);
     });
   })();
-  // ----- Appât -----
-  const BAITS = ['Gambas', 'Calamars', 'Sardines']; // liste extensible
-  BAITS.forEach(n => {
-    const o = document.createElement('option');
-    o.value = n; o.textContent = n;
-    $('f-bait').appendChild(o);
-  });
+  // Appât : les choix (Gambas, Calamars, Sardines) sont écrits directement dans index.html (menu #f-bait)
 
   function lureInfo() {
     const type = $('f-lure').value || null;

@@ -1,0 +1,8 @@
+services:
+  carnet-peche:
+    build: .
+    image: profish2026:latest
+    container_name: carnet-peche
+    ports:
+      - "8080:80"
+    restart: unless-stopped

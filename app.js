@@ -14,7 +14,8 @@
       'Orphie', 'Chinchard', 'Bonite', 'Thon rouge', 'Thon jaune', 'Mahi-mahi',
       'Barracuda', 'Mérou', 'Vivaneau', 'Carangue', 'Espadon', 'Marlin',
       // Céphalopodes
-      'Calamar', 'Seiche', 'Poulpe'
+      'Calamar', 'Seiche', 'Poulpe',
+      'Serran - poisson de Patrick'
     ]
   };
   const DEFAULT_FISH = [...FISH.fresh, ...FISH.sea];
@@ -273,10 +274,10 @@
   let waterKind = load(KEY_WATER, 'fresh') === 'sea' ? 'sea' : 'fresh';
   let waterUserPicked = false;
   const here = () => (me ? { lat: me.lat, lng: me.lng } : map.getCenter());
-  const fishForKind = (kind) => [
+  const fishForKind = (kind) => [...new Set([ // Set : évite un doublon si le même nom a déjà été ajouté à la main
     ...FISH[kind],
     ...customFish.filter(f => f.kind === kind || f.kind === 'any').map(f => f.name)
-  ];
+  ])];
   function paintWater() {
     document.querySelectorAll('[data-water]').forEach(b =>
       b.classList.toggle('on', b.dataset.water === waterKind));

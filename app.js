@@ -27,6 +27,7 @@
   const KEY_CUSTOM = 'peche.customFish.v1';
   const KEY_HIDDEN = 'peche.hiddenLayers.v1';
   const KEY_WATER = 'peche.water.v1';
+  const KEY_HIDDEN_FISH = 'peche.hiddenFish.v1'; // poissons retirés de la liste proposée
 
   // ---------- Stockage ----------
   const load = (k, def) => {
@@ -42,6 +43,7 @@
   const normCustom = (f) => (typeof f === 'string' ? { name: f, kind: 'any' } : f);
   let customFish = load(KEY_CUSTOM, []).map(normCustom);
   let hidden = new Set(load(KEY_HIDDEN, []));
+  let hiddenFish = new Set(load(KEY_HIDDEN_FISH, []));
 
   // Icône selon l'espèce : 🐙 poulpe, 🦑 calamar / seiche, 🐟 sinon
   const iconOf = (name) => {
@@ -274,10 +276,14 @@
   let waterKind = load(KEY_WATER, 'fresh') === 'sea' ? 'sea' : 'fresh';
   let waterUserPicked = false;
   const here = () => (me ? { lat: me.lat, lng: me.lng } : map.getCenter());
-  const fishForKind = (kind) => [...new Set([ // Set : évite un doublon si le même nom a déjà été ajouté à la main
+  // Liste complète d'une zone (retirés compris) / liste proposée (retirés exclus)
+  const fullFishForKind = (kind) => [...new Set([ // Set : évite un doublon si le même nom a déjà été ajouté à la main
     ...FISH[kind],
     ...customFish.filter(f => f.kind === kind || f.kind === 'any').map(f => f.name)
   ])];
+  const fishForKind = (kind) => fullFishForKind(kind).filter(n => !hiddenFish.has(n));
+  const hiddenCount = (kind) => fullFishForKind(kind).filter(n => hiddenFish.has(n)).length;
+  let editFish = false;
   function paintWater() {
     document.querySelectorAll('[data-water]').forEach(b =>
       b.classList.toggle('on', b.dataset.water === waterKind));
@@ -377,25 +383,55 @@
   function renderFishGrid() {
     const grid = $('fish-grid');
     grid.innerHTML = '';
+    grid.classList.toggle('editing', editFish);
     fishForKind(waterKind).forEach(name => {
       const b = document.createElement('button');
-      b.type = 'button'; b.className = 'fish-btn';
-      b.innerHTML = `<span class="ico" style="background:${colorOf(name)}33">${iconOf(name)}</span><span>${esc(name)}</span>`;
-      b.addEventListener('click', () => pickFish(name));
+      b.type = 'button'; b.className = 'fish-btn' + (editFish ? ' edit' : '');
+      b.innerHTML = `<span class="ico" style="background:${colorOf(name)}33">${iconOf(name)}</span><span>${esc(name)}</span>` +
+        (editFish ? '<span class="x" aria-hidden="true">✕</span>' : '');
+      b.addEventListener('click', () => (editFish ? removeFish(name) : pickFish(name)));
       grid.appendChild(b);
     });
-    const other = document.createElement('button');
-    other.type = 'button'; other.className = 'fish-btn other';
-    other.innerHTML = '<span class="ico" style="background:#e5e7eb">➕</span><span>Autre…</span>';
-    other.addEventListener('click', () => {
-      $('custom-box').classList.remove('hidden');
-      $('custom-name').focus();
-    });
-    grid.appendChild(other);
+    if (!editFish) {
+      const other = document.createElement('button');
+      other.type = 'button'; other.className = 'fish-btn other';
+      other.innerHTML = '<span class="ico" style="background:#e5e7eb">➕</span><span>Autre…</span>';
+      other.addEventListener('click', () => {
+        $('custom-box').classList.remove('hidden');
+        $('custom-name').focus();
+      });
+      grid.appendChild(other);
+    } else if (!grid.children.length) {
+      grid.innerHTML = '<p class="hint" style="grid-column:1/-1">Liste vide. Réaffichez des poissons ci-dessous.</p>';
+    }
+    paintFishTools();
   }
 
+  // Retirer un poisson de la liste proposée (les prises déjà enregistrées sont conservées)
+  function removeFish(name) {
+    if (!confirm(`Retirer « ${name} » de la liste ?\nVos prises déjà enregistrées avec ce poisson sont conservées.`)) return;
+    hiddenFish.add(name);
+    save(KEY_HIDDEN_FISH, [...hiddenFish]);
+    renderFishGrid();
+  }
+  function paintFishTools() {
+    $('fish-edit').textContent = editFish ? '✔️ Terminé' : '✏️ Modifier la liste';
+    $('fish-edit').classList.toggle('strong', editFish);
+    const n = hiddenCount(waterKind);
+    $('fish-restore').classList.toggle('hidden', !n);
+    $('fish-restore').textContent = `↩️ Réafficher les poissons retirés (${n})`;
+    if (editFish) $('custom-box').classList.add('hidden');
+  }
+  $('fish-edit').addEventListener('click', () => { editFish = !editFish; renderFishGrid(); });
+  $('fish-restore').addEventListener('click', () => {
+    fullFishForKind(waterKind).forEach(n => hiddenFish.delete(n));
+    save(KEY_HIDDEN_FISH, [...hiddenFish]);
+    renderFishGrid();
+    toast('Poissons réaffichés.');
+  });
+
   function openModal() {
-    selectedFish = null; photoData = null;
+    selectedFish = null; photoData = null; editFish = false;
     $('step-form').reset();
     $('photo-preview').classList.add('hidden');
     $('custom-box').classList.add('hidden');
@@ -450,7 +486,10 @@
     const raw = $('custom-name').value.trim().replace(/\s+/g, ' ');
     if (!raw) { toast('Saisis un nom de poisson.'); return; }
     const existing = allFish().find(n => n.toLowerCase() === raw.toLowerCase());
-    if (existing) return pickFish(existing);
+    if (existing) {
+      if (hiddenFish.delete(existing)) save(KEY_HIDDEN_FISH, [...hiddenFish]); // nom retiré puis ressaisi : on le réaffiche
+      return pickFish(existing);
+    }
     const name = raw.charAt(0).toUpperCase() + raw.slice(1);
     customFish.push({ name, kind: waterKind });
     save(KEY_CUSTOM, customFish);

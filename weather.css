@@ -137,3 +137,11 @@ select:focus { outline: none; border-color: var(--primary); }
 .danger-btn { background: #b91c1c; }
 #restore-summary { font-size: 15px; line-height: 1.5; margin: 6px 0 4px; }
 #restore-cancel { display: block; margin: 14px auto 0; }
+
+/* Liste de poissons : mode « Modifier » */
+.fish-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.fish-btn.edit { position: relative; border-color: #fca5a5; background: #fff5f5; }
+.fish-btn .x {
+  position: absolute; top: 4px; right: 6px; width: 20px; height: 20px; border-radius: 50%;
+  background: #dc2626; color: #fff; font-size: 11px; line-height: 20px; text-align: center;
+}

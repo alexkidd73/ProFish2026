@@ -8,6 +8,7 @@ Application web statique (HTML / CSS / JS) pour enregistrer ses prises sur une c
 - Bouton « J'ai pêché un poisson » → modale de choix du poisson, puis taille, poids, photo, note
 - Poisson absent de la liste : option « Autre… » pour créer un nouveau type
 - Liste de poissons adaptée à la zone : **eau douce** ou **mer / océan** (détection automatique de la position, modifiable à la main). Les poissons personnalisés sont rattachés à la zone où ils sont ajoutés.
+- Liste de poissons modifiable : « ✏️ Modifier la liste » dans la fenêtre de prise pour retirer un poisson de la liste proposée (les prises déjà enregistrées sont conservées), « ↩️ Réafficher » pour le remettre.
 - Leurre utilisé : type (Maidai, Tenya, Turluttes), couleur et poids en grammes. Pour ajouter un type de leurre, complétez la constante `LURES` dans `app.js`.
 - Appât : gambas, calamars ou sardines (options du menu `#f-bait` dans `index.html`)
 - Profondeur de la prise : saisie du sondeur, avec suggestion de la profondeur de la carte (EMODnet) quand elle est disponible

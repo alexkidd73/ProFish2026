@@ -94,6 +94,12 @@
     groupFor(c.fish).addLayer(m);
   }
 
+  // Conditions (météo, marée, lune) enregistrées avec la prise — voir conditions.js
+  function condLine(c) {
+    const s = window.FishCond ? FishCond.summary(c) : '';
+    return s ? `<p>🌤️ ${s}</p>` : '';
+  }
+
   function lureLine(c) {
     const l = c.lure;
     const parts = l ? [l.type, l.color, l.weight ? `${l.weight} g` : null].filter(Boolean) : [];
@@ -113,6 +119,7 @@
       <p>${esc(d)}</p>
       ${bits.length ? `<p>${bits.join(' · ')}</p>` : ''}
       ${lureLine(c)}
+      ${condLine(c)}
       ${c.note ? `<p>${esc(c.note)}</p>` : ''}
       ${c.photo ? `<img src="${c.photo}" alt="Photo">` : ''}
       <button type="button">🗑️ Supprimer</button>`;
@@ -513,6 +520,7 @@
       lat: pos.lat, lng: pos.lng,
       size: num('f-size'), weight: num('f-weight'),
       ...depthInfo(), water: waterKind, lure: lureInfo(), bait: $('f-bait').value || null,
+      cond: window.FishCond ? FishCond.base(new Date()) : null, // lune tout de suite, météo/marée ensuite
       photo: photoData, note: $('f-note').value.trim(),
       date: new Date().toISOString()
     };
@@ -524,6 +532,10 @@
     closeModal();
     map.setView([c.lat, c.lng], Math.max(map.getZoom(), 15));
     toast(`${c.fish} enregistré ! 🎉`);
+    // Conditions du moment (vent, température, courant, marée) : récupérées en arrière-plan
+    if (window.FishCond) {
+      FishCond.enrich(c).then(() => { save(KEY_CATCHES, catches); refreshList(); }).catch(() => {});
+    }
   });
 
   // ---------- Page « Mes prises » ----------
@@ -544,6 +556,8 @@
     if (lureParts.length) rows.push(`🪝 Leurre : ${esc(lureParts.join(' · '))}`);
     if (c.bait) rows.push(`🦐 Appât : ${esc(c.bait)}`);
     if (c.water) rows.push(c.water === 'sea' ? '🌊 Mer / océan' : '🏞️ Eau douce');
+    const cs = window.FishCond ? FishCond.summary(c) : '';
+    if (cs) rows.push(`🌤️ Conditions : ${cs}`);
     if (c.note) rows.push(`📝 ${esc(c.note)}`);
     const lat = Number(c.lat).toFixed(5), lng = Number(c.lng).toFixed(5);
     return `<article class="card" data-id="${esc(c.id)}">
@@ -647,9 +661,29 @@
   });
   if (location.hash === '#prises') openCatchesPage();
 
+  function refreshList() {
+    if (!page.classList.contains('hidden')) renderCatchesPage();
+  }
+
+  // Interface commune avec insights.js (marées, statistiques)
+  window.fishApp = {
+    map, esc, toast, colorOf, iconOf,
+    getCatches: () => catches,
+    getPos: () => me,
+    persist: () => save(KEY_CATCHES, catches),
+    refreshList
+  };
+
   // ---------- Init ----------
   rebuildMarkers();
   renderLayers();
+
+  // Anciennes prises ou prises saisies hors réseau : on complète leurs conditions
+  if (window.FishCond) {
+    const fill = () => FishCond.backfill(() => catches, () => save(KEY_CATCHES, catches), refreshList);
+    fill();
+    window.addEventListener('online', fill);
+  }
   if (catches.length && !('geolocation' in navigator)) {
     map.fitBounds(L.latLngBounds(catches.map(c => [c.lat, c.lng])).pad(0.3));
   }

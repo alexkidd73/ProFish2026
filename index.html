@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#0b5d7a">
   <title>Carnet de Pêche</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=20261102g">
-  <link rel="stylesheet" href="weather.css?v=20261102g">
+  <link rel="stylesheet" href="style.css?v=20261103a">
+  <link rel="stylesheet" href="weather.css?v=20261103a">
 </head>
 <body>
   <div id="map"></div>
@@ -17,6 +17,7 @@
     <button id="btn-layers" class="round" aria-label="Calques">🗂️</button>
     <button id="btn-locate" class="round" aria-label="Ma position">📍</button>
     <button id="btn-list" class="round" aria-label="Mes prises">📋</button>
+    <button id="btn-tide" class="round" aria-label="Marées et lune" title="Marées et lune">🌙</button>
     <button id="btn-boat" class="round" aria-label="Remplacer le bateau par un point bleu" title="Bateau / point bleu">🔵</button>
   </div>
   <div id="gps-status" class="gps-status">Recherche GPS…</div>
@@ -68,11 +69,35 @@
     </div>
   </aside>
 
+  <!-- Panneau marées & lune -->
+  <aside id="tide-panel" class="sheet hidden" aria-label="Marées et lune">
+    <div class="sheet-head">
+      <h2>Marées &amp; lune</h2>
+      <button class="close" data-close="tide-panel" aria-label="Fermer">✕</button>
+    </div>
+    <div id="tide-body"></div>
+  </aside>
+
+  <!-- Page « Statistiques » -->
+  <section id="stats-page" class="page hidden" aria-label="Statistiques">
+    <header class="page-head">
+      <button type="button" id="stats-back" class="back" aria-label="Retour">←</button>
+      <h2>Statistiques</h2>
+    </header>
+    <div class="page-tools">
+      <select id="stats-filter" aria-label="Filtrer par espèce">
+        <option value="">Toutes les espèces</option>
+      </select>
+    </div>
+    <div id="stats-body" class="page-list"></div>
+  </section>
+
   <!-- Page « Mes prises » (plus récentes d'abord) -->
   <section id="catches-page" class="page hidden" aria-label="Mes prises">
     <header class="page-head">
       <button type="button" id="page-back" class="back" aria-label="Retour à la carte">←</button>
       <h2>Mes prises <span id="page-count" class="count"></span></h2>
+      <button type="button" id="btn-stats" class="back stats-btn" aria-label="Statistiques" title="Statistiques">📊</button>
     </header>
     <div class="page-tools">
       <select id="page-filter" aria-label="Filtrer par poisson">
@@ -166,7 +191,9 @@
   <div id="toast" class="toast hidden"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=20261102g"></script>
-  <script src="maps.js?v=20261102g"></script>
+  <script src="conditions.js?v=20261103a"></script>
+  <script src="app.js?v=20261103a"></script>
+  <script src="maps.js?v=20261103a"></script>
+  <script src="insights.js?v=20261103a"></script>
 </body>
 </html>

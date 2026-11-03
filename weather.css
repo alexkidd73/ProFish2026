@@ -94,3 +94,33 @@ select:focus { outline: none; border-color: var(--primary); }
   font-size: 12px; white-space: nowrap; border: 2px solid #fff;
   box-shadow: 0 1px 4px rgba(0,0,0,.45);
 }
+
+/* Marées & lune */
+.tide-block { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #eef1f3; }
+.tide-block .big { font-size: 30px; line-height: 1; width: 38px; text-align: center; }
+.muted { color: var(--muted); font-size: 14px; }
+.tide-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.tide-list li { display: grid; grid-template-columns: 1.3fr 1.2fr auto; gap: 8px; padding: 8px 0; border-bottom: 1px solid #eef1f3; font-size: 15px; }
+.tide-svg { width: 100%; height: auto; margin-top: 10px; background: #f6fafc; border-radius: 10px; display: block; }
+.tide-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.tide-warn { margin: 10px 0; padding: 10px 12px; background: #fff7e6; border-radius: 10px; font-size: 14px; }
+.sheet a { color: var(--primary); }
+
+/* Statistiques */
+#stats-page { z-index: 850; }
+.page-head .stats-btn { margin-left: auto; }
+.tiles { margin-top: 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.tile { background: #fff; border-radius: 14px; padding: 12px 6px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+.tile strong { display: block; font-size: 26px; color: var(--primary); }
+.tile span { font-size: 12px; color: var(--muted); }
+.records { margin-top: 10px; padding: 10px 12px; background: #fff; border-radius: 14px; font-size: 14px; line-height: 1.7; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+.stat { background: #fff; border-radius: 14px; padding: 12px; margin-top: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+.stat h3 { margin: 0 0 8px; font-size: 16px; }
+.stat h3 small { font-weight: 400; color: var(--muted); font-size: 12px; margin-left: 6px; }
+.bar-row { display: grid; grid-template-columns: minmax(84px, 38%) 1fr 28px; align-items: center; gap: 8px; padding: 4px 0; font-size: 14px; }
+.bar-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+.bar { height: 14px; background: #eef3f6; border-radius: 4px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: #6aa7bd; border-radius: 0 4px 4px 0; }
+.bar-row.top .bar i { background: var(--primary); }
+.bar-row.top .bar-label, .bar-row.top .bar-n { font-weight: 700; }
+.bar-n { text-align: right; font-variant-numeric: tabular-nums; color: var(--text); }

@@ -124,3 +124,16 @@ select:focus { outline: none; border-color: var(--primary); }
 .bar-row.top .bar i { background: var(--primary); }
 .bar-row.top .bar-label, .bar-row.top .bar-n { font-weight: 700; }
 .bar-n { text-align: right; font-variant-numeric: tabular-nums; color: var(--text); }
+
+/* Sauvegarde */
+.round { position: relative; }
+.round.alert::after {
+  content: ''; position: absolute; top: 3px; right: 3px; width: 13px; height: 13px;
+  border-radius: 50%; background: #e11d48; border: 2px solid #fff;
+}
+.chip.strong { background: var(--primary); color: #fff; font-weight: 700; }
+.backup-status { margin: 4px 0 8px; font-size: 14px; line-height: 1.5; }
+.backup-status.warn { background: #fff7e6; padding: 8px 10px; border-radius: 10px; }
+.danger-btn { background: #b91c1c; }
+#restore-summary { font-size: 15px; line-height: 1.5; margin: 6px 0 4px; }
+#restore-cancel { display: block; margin: 14px auto 0; }

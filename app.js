@@ -265,30 +265,6 @@
   $('layers-all').addEventListener('click', () => setAll(true));
   $('layers-none').addEventListener('click', () => setAll(false));
 
-  // Export / import
-  $('btn-export').addEventListener('click', () => {
-    const blob = new Blob([JSON.stringify({ catches, customFish }, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `carnet-peche-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-  });
-  $('file-import').addEventListener('change', async (e) => {
-    const f = e.target.files[0]; if (!f) return;
-    try {
-      const data = JSON.parse(await f.text());
-      const ids = new Set(catches.map(c => c.id));
-      (data.catches || []).forEach(c => { if (!ids.has(c.id)) catches.push(c); });
-      (data.customFish || []).map(normCustom).forEach(f => {
-        if (f && f.name && !allFish().includes(f.name)) customFish.push(f);
-      });
-      save(KEY_CATCHES, catches); save(KEY_CUSTOM, customFish);
-      rebuildMarkers(); renderLayers(); toast('Import terminé.');
-    } catch { toast('Fichier invalide.'); }
-    e.target.value = '';
-  });
-
   // ---------- Modale de prise ----------
   const modal = $('modal');
   let selectedFish = null, photoData = null;
@@ -667,7 +643,7 @@
 
   // Interface commune avec insights.js (marées, statistiques)
   window.fishApp = {
-    map, esc, toast, colorOf, iconOf,
+    map, esc, toast, colorOf, iconOf, defaultFish: DEFAULT_FISH,
     getCatches: () => catches,
     getPos: () => me,
     persist: () => save(KEY_CATCHES, catches),

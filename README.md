@@ -19,7 +19,8 @@ Application web statique (HTML / CSS / JS) pour enregistrer ses prises sur une c
 - Fonds de carte : **Plan** (OpenStreetMap), **Marine** (OpenStreetMap + balisage OpenSeaMap), **Satellite** (Esri)
 - Calques de **profondeur d'eau** (bathymétrie EMODnet : fonds marins en couleurs + isobathes), superposables à n'importe quel fond. Indicatif, ne pas utiliser pour la navigation.
 - Calques météo en temps réel (Open-Meteo, sans clé API) : **vent** (nœuds), **température de l'air**, **température de l'eau**, **courant marin** (nœuds). Température de l'eau et courant n'existent qu'en mer.
-- Données stockées sur l'appareil (localStorage), export/import JSON
+- **Sauvegarde** (🗂️ → Sauvegarde) : fichier JSON complet (prises avec photos, poissons ajoutés, réglages), partage vers Drive/Fichiers/e-mail depuis le téléphone, restauration avec choix **Fusionner** (recommandé) ou **Remplacer** (une sauvegarde de l'état actuel est téléchargée avant). Rappel (point rouge sur 🗂️) si des prises ne sont pas sauvegardées depuis 7 jours ou dès 5 nouvelles prises. Les anciens fichiers d'export restent compatibles.
+- Données stockées sur l'appareil (localStorage)
 - Interface adaptée aux smartphones
 
 ## Lancer avec Docker

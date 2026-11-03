@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#0b5d7a">
   <title>Carnet de Pêche</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=20261103a">
-  <link rel="stylesheet" href="weather.css?v=20261103a">
+  <link rel="stylesheet" href="style.css?v=20261103b">
+  <link rel="stylesheet" href="weather.css?v=20261103b">
 </head>
 <body>
   <div id="map"></div>
@@ -63,11 +63,35 @@
       <button id="layers-none" class="chip">Tout masquer</button>
     </div>
     <ul id="layers-list" class="layers-list"></ul>
-    <div class="sheet-actions">
-      <button id="btn-export" class="chip">⬇️ Exporter (JSON)</button>
-      <label class="chip">⬆️ Importer<input id="file-import" type="file" accept="application/json" hidden></label>
+
+    <div id="backup-section">
+      <h3 class="sec">Sauvegarde</h3>
+      <p id="backup-status" class="backup-status"></p>
+      <div class="sheet-actions">
+        <button id="btn-backup" type="button" class="chip strong">💾 Sauvegarder</button>
+        <button id="btn-share" type="button" class="chip hidden">📤 Envoyer vers…</button>
+        <label class="chip">📥 Restaurer<input id="file-restore" type="file" accept="application/json,.json" hidden></label>
+      </div>
+      <p class="hint">Le fichier contient vos prises (photos comprises), vos poissons ajoutés et vos réglages. Gardez-le hors du téléphone (Drive, e-mail, ordinateur).</p>
+      <p id="persist-note" class="hint"></p>
     </div>
   </aside>
+
+  <!-- Restauration d'une sauvegarde -->
+  <div id="restore-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="restore-title">
+    <div class="modal-box">
+      <div class="sheet-head">
+        <h2 id="restore-title">Restaurer une sauvegarde</h2>
+        <button class="close" id="restore-close" type="button" aria-label="Fermer">✕</button>
+      </div>
+      <p id="restore-summary"></p>
+      <button id="restore-merge" type="button" class="primary">➕ Fusionner avec mes prises actuelles</button>
+      <p class="hint">Recommandé : vos prises actuelles sont conservées, celles du fichier qui manquent sont ajoutées.</p>
+      <button id="restore-replace" type="button" class="primary danger-btn">♻️ Remplacer toutes mes données</button>
+      <p class="hint">Efface vos données actuelles. Une sauvegarde de l'état actuel est d'abord téléchargée.</p>
+      <button id="restore-cancel" type="button" class="link">Annuler</button>
+    </div>
+  </div>
 
   <!-- Panneau marées & lune -->
   <aside id="tide-panel" class="sheet hidden" aria-label="Marées et lune">
@@ -191,9 +215,10 @@
   <div id="toast" class="toast hidden"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="conditions.js?v=20261103a"></script>
-  <script src="app.js?v=20261103a"></script>
-  <script src="maps.js?v=20261103a"></script>
-  <script src="insights.js?v=20261103a"></script>
+  <script src="conditions.js?v=20261103b"></script>
+  <script src="app.js?v=20261103b"></script>
+  <script src="maps.js?v=20261103b"></script>
+  <script src="insights.js?v=20261103b"></script>
+  <script src="backup.js?v=20261103b"></script>
 </body>
 </html>

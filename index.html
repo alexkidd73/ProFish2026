@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#0b5d7a">
   <title>Carnet de Pêche</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=20261103d">
-  <link rel="stylesheet" href="weather.css?v=20261103d">
+  <link rel="stylesheet" href="style.css?v=20261104a">
+  <link rel="stylesheet" href="weather.css?v=20261104a">
 </head>
 <body>
   <div id="map"></div>
@@ -208,21 +208,34 @@
         <label for="f-photo">Photo</label>
         <input id="f-photo" type="file" accept="image/*" capture="environment">
         <img id="photo-preview" class="photo-preview hidden" alt="Aperçu">
+        <button type="button" id="photo-remove" class="link hidden">Retirer la photo</button>
         <label for="f-note">Note (appât, spot…)</label>
         <textarea id="f-note" rows="2" maxlength="300" placeholder="Optionnel"></textarea>
-        <p id="pos-info" class="hint"></p>
-        <button type="submit" class="primary">Enregistrer la prise</button>
+        <label for="f-date">Date et heure de la prise</label>
+        <input id="f-date" type="datetime-local">
+        <label>Position</label>
+        <p id="pos-info" class="hint posline"></p>
+        <div class="sheet-actions">
+          <button type="button" id="pos-pick" class="chip">🗺️ Choisir sur la carte</button>
+          <button type="button" id="pos-me" class="chip">📍 Ma position</button>
+        </div>
+        <button id="submit-btn" type="submit" class="primary">Enregistrer la prise</button>
       </form>
     </div>
+  </div>
+
+  <div id="pick-banner" class="pick-banner hidden" role="status">
+    <span>📍 Touchez la carte pour placer la prise</span>
+    <button type="button" id="pick-cancel" class="chip">Annuler</button>
   </div>
 
   <div id="toast" class="toast hidden"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="conditions.js?v=20261103d"></script>
-  <script src="app.js?v=20261103d"></script>
-  <script src="maps.js?v=20261103d"></script>
-  <script src="insights.js?v=20261103d"></script>
-  <script src="backup.js?v=20261103d"></script>
+  <script src="conditions.js?v=20261104a"></script>
+  <script src="app.js?v=20261104a"></script>
+  <script src="maps.js?v=20261104a"></script>
+  <script src="insights.js?v=20261104a"></script>
+  <script src="backup.js?v=20261104a"></script>
 </body>
 </html>

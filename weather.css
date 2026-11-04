@@ -145,3 +145,19 @@ select:focus { outline: none; border-color: var(--primary); }
   position: absolute; top: 4px; right: 6px; width: 20px; height: 20px; border-radius: 50%;
   background: #dc2626; color: #fff; font-size: 11px; line-height: 20px; text-align: center;
 }
+
+/* Modification d'une prise */
+input[type=datetime-local] {
+  width: 100%; padding: 12px; font-size: 16px; font-family: inherit;
+  border: 1.5px solid #cfd9de; border-radius: 10px; background: #fff; color: var(--text);
+}
+.posline { margin: 2px 0 6px; font-variant-numeric: tabular-nums; }
+.popup button.edit { background: #e0f2fe; color: #075985; margin-right: 6px; }
+.pick-banner {
+  position: fixed; z-index: 1200; left: 50%; transform: translateX(-50%);
+  top: calc(12px + var(--safe-t)); width: min(92vw, 420px);
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  background: #111c22; color: #fff; padding: 10px 14px; border-radius: 26px; font-size: 15px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.4);
+}
+.pick-banner .chip { background: #fff; }

@@ -125,8 +125,10 @@
       ${condLine(c)}
       ${c.note ? `<p>${esc(c.note)}</p>` : ''}
       ${c.photo ? `<img src="${c.photo}" alt="Photo">` : ''}
-      <button type="button">🗑️ Supprimer</button>`;
-    div.querySelector('button').addEventListener('click', () => {
+      <button type="button" class="edit">✏️ Modifier</button>
+      <button type="button" class="del">🗑️ Supprimer</button>`;
+    div.querySelector('.edit').addEventListener('click', () => startEdit(c.id));
+    div.querySelector('.del').addEventListener('click', () => {
       if (confirm('Supprimer cette prise ?')) deleteCatch(c.id);
     });
     return div;
@@ -271,6 +273,7 @@
   // ---------- Modale de prise ----------
   const modal = $('modal');
   let selectedFish = null, photoData = null;
+  let editingId = null, formPos = null, dateTouched = false, editOrig = null; // modification d'une prise
 
   // ----- Zone : eau douce / mer -----
   let waterKind = load(KEY_WATER, 'fresh') === 'sea' ? 'sea' : 'fresh';
@@ -357,11 +360,11 @@
       return typeof v === 'number' && v < 0 ? Math.round(-v * 10) / 10 : null; // altitude négative = profondeur
     } catch { return null; }
   }
-  async function initDepth() {
-    depthEdited = false; depthFromMap = null;
+  async function initDepth(reset = true) {
+    if (reset) { depthEdited = false; depthFromMap = null; }
     const hint = $('depth-hint');
-    hint.textContent = 'Saisissez la profondeur de votre sondeur (en mètres).';
-    const p = here();
+    if (reset) hint.textContent = 'Saisissez la profondeur de votre sondeur (en mètres).';
+    const p = formPos || here();
     const d = await fetchMapDepth(p.lat, p.lng);
     if (d == null || modal.classList.contains('hidden')) return;
     depthFromMap = d;
@@ -371,6 +374,7 @@
   function depthInfo() {
     const v = parseFloat($('f-depth').value);
     if (!isFinite(v) || v <= 0) return { depth: null, depthSrc: null };
+    if (editOrig && !depthEdited && v === editOrig.depth) return { depth: v, depthSrc: editOrig.depthSrc }; // inchangée
     return { depth: v, depthSrc: (!depthEdited && v === depthFromMap) ? 'carte' : 'sondeur' };
   }
   $('f-depth').addEventListener('input', () => { depthEdited = true; });
@@ -432,8 +436,13 @@
 
   function openModal() {
     selectedFish = null; photoData = null; editFish = false;
+    editingId = null; formPos = null; dateTouched = false; editOrig = null;
     $('step-form').reset();
+    $('f-date').value = toLocalInput(new Date());
+    $('f-date').max = toLocalInput(new Date(Date.now() + 60000));
+    $('depth-hint').textContent = '';
     $('photo-preview').classList.add('hidden');
+    $('photo-remove').classList.add('hidden');
     $('custom-box').classList.add('hidden');
     $('custom-name').value = '';
     $('step-form').classList.add('hidden');
@@ -466,12 +475,25 @@
     $('picked-badge').innerHTML = `<span class="dot" style="background:${colorOf(name)}"></span>${esc(name)}`;
     $('step-pick').classList.add('hidden');
     $('step-form').classList.remove('hidden');
-    $('modal-title').textContent = 'Détails de la prise';
-    $('pos-info').textContent = me
-      ? `📍 Position GPS actuelle (±${Math.round(me.accuracy)} m)`
-      : '📍 GPS indisponible : le centre de la carte sera utilisé.';
-    initDepth();
+    $('modal-title').textContent = editingId ? 'Modifier la prise' : 'Détails de la prise';
+    $('submit-btn').textContent = editingId ? 'Enregistrer les modifications' : 'Enregistrer la prise';
+    if (!editingId && !formPos) { // nouvelle prise : position GPS par défaut
+      formPos = me
+        ? { lat: me.lat, lng: me.lng, src: `GPS actuel (±${Math.round(me.accuracy)} m)` }
+        : { lat: map.getCenter().lat, lng: map.getCenter().lng, src: 'centre de la carte (GPS indisponible)' };
+      initDepth();
+    }
+    paintPos();
   }
+  function paintPos() {
+    $('pos-info').textContent = formPos
+      ? `📍 ${formPos.lat.toFixed(5)}, ${formPos.lng.toFixed(5)} — ${formPos.src}` : '';
+  }
+  const toLocalInput = (d) => {
+    const p2 = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}T${p2(d.getHours())}:${p2(d.getMinutes())}`;
+  };
+  $('f-date').addEventListener('input', () => { dateTouched = true; });
 
   $('btn-catch').addEventListener('click', openModal);
   $('modal-close').addEventListener('click', closeModal);
@@ -518,27 +540,58 @@
   $('f-photo').addEventListener('change', async (e) => {
     const f = e.target.files[0];
     const prev = $('photo-preview');
-    if (!f) { photoData = null; prev.classList.add('hidden'); return; }
+    if (!f) return; // annulation du sélecteur : on garde la photo actuelle (retrait = bouton dédié)
     try {
       photoData = await resizeImage(f);
-      prev.src = photoData; prev.classList.remove('hidden');
+      prev.src = photoData; prev.classList.remove('hidden'); $('photo-remove').classList.remove('hidden');
     } catch { toast('Photo illisible.'); }
   });
 
   $('step-form').addEventListener('submit', (e) => {
     e.preventDefault();
     if (!selectedFish) return;
-    const pos = me ? { lat: me.lat, lng: me.lng } : map.getCenter();
+    const pos = formPos || (me ? { lat: me.lat, lng: me.lng } : map.getCenter());
     const num = (id) => { const v = parseFloat($(id).value); return isFinite(v) && v > 0 ? v : null; };
-    const c = {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-      fish: selectedFish,
-      lat: pos.lat, lng: pos.lng,
+    const typed = $('f-date').value ? new Date($('f-date').value) : null;
+    const fields = {
+      fish: selectedFish, lat: pos.lat, lng: pos.lng,
       size: num('f-size'), weight: num('f-weight'),
       ...depthInfo(), water: waterKind, lure: lureInfo(), bait: $('f-bait').value || null,
-      cond: window.FishCond ? FishCond.base(new Date()) : null, // lune tout de suite, météo/marée ensuite
-      photo: photoData, note: $('f-note').value.trim(),
-      date: new Date().toISOString()
+      photo: photoData, note: $('f-note').value.trim()
+    };
+
+    // ----- Modification d'une prise existante -----
+    if (editingId) {
+      const c = catches.find(x => x.id === editingId);
+      if (!c) { closeModal(); return; }
+      let date = new Date(c.date);
+      if (dateTouched && typed && !isNaN(typed)) date = typed;
+      if (date.getTime() > Date.now() + 5 * 60000) { toast('La date ne peut pas être dans le futur.'); return; }
+      const before = { ...c };
+      const moved = Math.abs(c.lat - fields.lat) > 1e-6 || Math.abs(c.lng - fields.lng) > 1e-6;
+      const dateChanged = date.getTime() !== new Date(c.date).getTime();
+      Object.assign(c, fields, { date: date.toISOString(), updated: new Date().toISOString() });
+      if (!save(KEY_CATCHES, catches)) { Object.keys(c).forEach(k => delete c[k]); Object.assign(c, before); return; }
+      hidden.delete(c.fish); save(KEY_HIDDEN, [...hidden]);
+      rebuildMarkers(); renderLayers(); closeModal(); refreshList();
+      if (moved || dateChanged) map.setView([c.lat, c.lng], Math.max(map.getZoom(), 15));
+      toast(`${c.fish} modifié ✅`);
+      if ((moved || dateChanged) && window.FishCond) { // lieu ou heure changés : conditions à recalculer
+        c.cond = FishCond.base(date);
+        save(KEY_CATCHES, catches);
+        FishCond.enrich(c).then(() => { save(KEY_CATCHES, catches); refreshList(); }).catch(() => {});
+      }
+      return;
+    }
+
+    // ----- Nouvelle prise -----
+    const date = dateTouched && typed && !isNaN(typed) ? typed : new Date();
+    if (date.getTime() > Date.now() + 5 * 60000) { toast('La date ne peut pas être dans le futur.'); return; }
+    const c = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      ...fields,
+      cond: window.FishCond ? FishCond.base(date) : null, // lune tout de suite, météo/marée ensuite
+      date: date.toISOString()
     };
     catches.push(c);
     if (!save(KEY_CATCHES, catches)) { catches.pop(); return; }
@@ -591,6 +644,7 @@
       ${rows.map(r => `<div class="row-line">${r}</div>`).join('')}
       <div class="gps">📍 ${fmtCoord(Number(c.lat), 'N', 'S')}, ${fmtCoord(Number(c.lng), 'E', 'O')}</div>
       <div class="card-actions">
+        <button type="button" data-act="edit">✏️ Modifier</button>
         <button type="button" data-act="map">🗺️ Voir sur la carte</button>
         <button type="button" data-act="copy" data-coords="${lat}, ${lng}">📋 Copier GPS</button>
         <a href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}" target="_blank" rel="noopener">↗️ Ouvrir dans Maps</a>
@@ -668,7 +722,8 @@
     const btn = e.target.closest('button[data-act]');
     if (!btn) return;
     const id = btn.closest('.card').dataset.id;
-    if (btn.dataset.act === 'map') showOnMap(id);
+    if (btn.dataset.act === 'edit') startEdit(id);
+    else if (btn.dataset.act === 'map') showOnMap(id);
     else if (btn.dataset.act === 'copy') copyText(btn.dataset.coords);
     else if (btn.dataset.act === 'del' && confirm('Supprimer cette prise ?')) {
       deleteCatch(id);
@@ -687,8 +742,78 @@
     getCatches: () => catches,
     getPos: () => me,
     persist: () => save(KEY_CATCHES, catches),
-    refreshList
+    refreshList, startEdit
   };
+
+  // ---------- Modification d'une prise ----------
+  function setSelect(id, val) { // ajoute l'option si la valeur enregistrée n'est plus dans la liste
+    const sel = $(id);
+    if (val && !Array.from(sel.options).some(o => o.value === val)) {
+      const o = document.createElement('option'); o.value = val; o.textContent = val; sel.appendChild(o);
+    }
+    sel.value = val || '';
+  }
+  function startEdit(id) {
+    const c = catches.find(x => x.id === id);
+    if (!c) return;
+    map.closePopup();
+    openModal();                       // remet le formulaire à zéro (et lance la détection de zone)
+    editingId = id;
+    waterKind = c.water === 'sea' ? 'sea' : c.water === 'fresh' ? 'fresh' : waterKind;
+    waterUserPicked = true; paintWater(); renderFishGrid();
+    $('water-hint').textContent = '';
+    $('f-size').value = c.size ?? '';
+    $('f-weight').value = c.weight ?? '';
+    $('f-depth').value = c.depth ?? '';
+    setSelect('f-lure', c.lure && c.lure.type);
+    $('f-lure-color').value = (c.lure && c.lure.color) || '';
+    $('f-lure-weight').value = (c.lure && c.lure.weight) || '';
+    setSelect('f-bait', c.bait);
+    $('f-note').value = c.note || '';
+    $('f-date').value = toLocalInput(new Date(c.date));
+    dateTouched = false;
+    photoData = c.photo || null;
+    $('photo-preview').classList.toggle('hidden', !photoData);
+    if (photoData) $('photo-preview').src = photoData;
+    $('photo-remove').classList.toggle('hidden', !photoData);
+    editOrig = { depth: c.depth ?? null, depthSrc: c.depthSrc ?? null };
+    depthEdited = false; depthFromMap = null;
+    formPos = { lat: c.lat, lng: c.lng, src: 'position enregistrée' };
+    pickFish(c.fish);                  // affiche le formulaire (titre « Modifier la prise »)
+    initDepth(false);                  // profondeur de la carte à titre indicatif
+  }
+  $('photo-remove').addEventListener('click', () => {
+    photoData = null;
+    $('f-photo').value = '';
+    $('photo-preview').classList.add('hidden');
+    $('photo-remove').classList.add('hidden');
+  });
+
+  // Choisir la position en touchant la carte
+  let pageWasOpen = false;
+  function onMapPick(e) { endPick({ lat: e.latlng.lat, lng: e.latlng.lng, src: 'choisie sur la carte' }); }
+  function endPick(placed) {
+    map.off('click', onMapPick);
+    $('pick-banner').classList.add('hidden');
+    modal.classList.remove('hidden');
+    if (pageWasOpen) { page.classList.remove('hidden'); pageWasOpen = false; }
+    if (placed) { formPos = placed; initDepth(false); }
+    paintPos();
+  }
+  $('pos-pick').addEventListener('click', () => {
+    modal.classList.add('hidden');
+    pageWasOpen = !page.classList.contains('hidden');
+    if (pageWasOpen) page.classList.add('hidden');
+    if (formPos) map.setView([formPos.lat, formPos.lng], Math.max(map.getZoom(), 15));
+    $('pick-banner').classList.remove('hidden');
+    map.on('click', onMapPick);
+  });
+  $('pick-cancel').addEventListener('click', () => endPick(null));
+  $('pos-me').addEventListener('click', () => {
+    if (!me) { toast('Position GPS pas encore disponible.'); return; }
+    formPos = { lat: me.lat, lng: me.lng, src: `GPS actuel (±${Math.round(me.accuracy)} m)` };
+    paintPos(); initDepth(false);
+  });
 
   // ---------- Init ----------
   rebuildMarkers();

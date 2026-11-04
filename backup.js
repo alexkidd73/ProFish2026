@@ -55,8 +55,10 @@
     a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   }
+  // Signature d'une prise : change quand la prise est modifiée
+  const sigOf = (c) => c.id + '|' + (c.updated || '');
   function markBackup(catches, at) {
-    write(KEY_BK, { at: at || new Date().toISOString(), ids: catches.map((c) => c.id) });
+    write(KEY_BK, { at: at || new Date().toISOString(), ids: catches.map((c) => c.id), sigs: catches.map(sigOf) });
     renderStatus();
   }
 
@@ -64,8 +66,9 @@
   function state() {
     const cur = A.getCatches();
     const bk = read(KEY_BK, null);
-    const saved = new Set(bk && Array.isArray(bk.ids) ? bk.ids : []);
-    const unsaved = cur.filter((c) => !saved.has(c.id)).length;
+    const useSig = !!(bk && Array.isArray(bk.sigs)); // anciennes sauvegardes : identifiants seuls
+    const saved = new Set(bk ? (useSig ? bk.sigs : Array.isArray(bk.ids) ? bk.ids : []) : []);
+    const unsaved = cur.filter((c) => !saved.has(useSig ? sigOf(c) : c.id)).length;
     const age = bk && bk.at ? Date.now() - new Date(bk.at).getTime() : Infinity;
     const due = cur.length > 0 && (!bk || unsaved >= REMIND_AFTER_NEW || (unsaved >= 1 && age > REMIND_AFTER_DAYS * DAY));
     return { cur, bk, unsaved, due };
@@ -77,7 +80,7 @@
     else if (!s.bk) el.innerHTML = '⚠️ <strong>Aucune sauvegarde.</strong> Vos données ne sont que dans ce navigateur.';
     else {
       el.innerHTML = `Dernière sauvegarde : <strong>${esc(fmtDate(s.bk.at))}</strong>` +
-        (s.unsaved ? `<br>⚠️ ${s.unsaved} prise${s.unsaved > 1 ? 's' : ''} non sauvegardée${s.unsaved > 1 ? 's' : ''}` : '<br>✅ Tout est sauvegardé');
+        (s.unsaved ? `<br>⚠️ ${s.unsaved} prise${s.unsaved > 1 ? 's' : ''} nouvelle${s.unsaved > 1 ? 's' : ''} ou modifiée${s.unsaved > 1 ? 's' : ''}, non sauvegardée${s.unsaved > 1 ? 's' : ''}` : '<br>✅ Tout est sauvegardé');
     }
     el.classList.toggle('warn', s.due);
     $('btn-layers').classList.toggle('alert', s.due);

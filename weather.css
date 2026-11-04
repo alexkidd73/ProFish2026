@@ -161,3 +161,33 @@ input[type=datetime-local] {
   box-shadow: 0 4px 16px rgba(0,0,0,.4);
 }
 .pick-banner .chip { background: #fff; }
+
+/* Prévisions */
+#forecast-page { z-index: 860; }
+.fc-bar { position: sticky; top: 0; z-index: 1; background: #f1f5f8; padding: 10px 12px 6px; max-width: 720px; margin: 0 auto; }
+.page-head + .fc-bar { top: 61px; }
+.fc-days { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
+.fc-days::-webkit-scrollbar { display: none; }
+.fc-day { flex: none; padding: 9px 14px; border: 2px solid #e1e8ec; border-radius: 20px; background: #fff; font-size: 14px; color: var(--text); cursor: pointer; white-space: nowrap; }
+.fc-day.on { border-color: var(--primary); background: var(--primary); color: #fff; font-weight: 700; }
+.fc-loc { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--muted); }
+.fc-loc .chip { flex: none; padding: 6px 12px; font-size: 13px; }
+.ftiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px; }
+.ftile { background: #fff; border-radius: 14px; padding: 10px 12px; box-shadow: 0 1px 4px rgba(0,0,0,.12); border-left: 6px solid #cfd9de; }
+.ftile strong { display: block; font-size: 20px; }
+.ftile span { font-size: 12px; color: var(--muted); }
+.ftile.l-g { border-left-color: #16a34a; } .ftile.l-o { border-left-color: #ea580c; } .ftile.l-r { border-left-color: #dc2626; }
+.fc-sun { margin-top: 10px; padding: 10px 12px; background: #fff; border-radius: 14px; font-size: 14px; line-height: 1.6; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+.fc-scroll { overflow-x: auto; }
+.fc-table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.fc-table th, .fc-table td { padding: 7px 4px; text-align: center; border-bottom: 1px solid #eef1f3; white-space: nowrap; }
+.fc-table thead th { font-size: 12px; color: var(--muted); font-weight: 600; }
+.fc-table tbody th { text-align: left; font-weight: 700; padding-left: 6px; }
+.fc-table small { display: block; font-size: 11px; color: var(--muted); }
+.fc-table tr.night th, .fc-table tr.night td { background: #f3f4f6; color: #6b7280; }
+.fc-table tr.now th { box-shadow: inset 4px 0 0 #e11d48; }
+.fc-table td.c-g { background: #e8f6ec; } .fc-table td.c-o { background: #fdf0e1; } .fc-table td.c-r { background: #fde7e7; }
+.fc-table tr.night td.c-g, .fc-table tr.night td.c-o, .fc-table tr.night td.c-r { color: #374151; }
+.arr { display: inline-block; font-weight: 700; line-height: 1; }
+.lg { padding: 1px 6px; border-radius: 8px; font-size: 12px; }
+.lg.g { background: #e8f6ec; } .lg.o { background: #fdf0e1; } .lg.r { background: #fde7e7; }

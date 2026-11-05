@@ -16,12 +16,12 @@
   // =====================================================
   // Fonds de carte
   // =====================================================
-  const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
+  const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, crossOrigin: true,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   });
   const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    maxZoom: 19, maxNativeZoom: 18,
+    maxZoom: 19, maxNativeZoom: 18, crossOrigin: true,
     attribution: 'Imagerie &copy; Esri, Maxar, Earthstar Geographics'
   });
   const seamark = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {

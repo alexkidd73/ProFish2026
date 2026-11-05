@@ -4,10 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b5d7a">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <title>Carnet de Pêche</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=20261104b">
-  <link rel="stylesheet" href="weather.css?v=20261104b">
+  <link rel="stylesheet" href="style.css?v=20261105a">
+  <link rel="stylesheet" href="weather.css?v=20261105a">
 </head>
 <body>
   <div id="map"></div>
@@ -22,6 +26,7 @@
     <button id="btn-boat" class="round" aria-label="Remplacer le bateau par un point bleu" title="Bateau / point bleu">🔵</button>
   </div>
   <div id="gps-status" class="gps-status">Recherche GPS…</div>
+  <div id="offline-pill" class="offline-pill hidden" role="status">📴 Hors ligne</div>
   <div id="wx-status" class="wx-status hidden" aria-live="polite"></div>
   <button id="btn-catch" class="main-btn">🎣 J'ai pêché un poisson</button>
 
@@ -64,6 +69,19 @@
       <button id="layers-none" class="chip">Tout masquer</button>
     </div>
     <ul id="layers-list" class="layers-list"></ul>
+
+    <div id="offline-section">
+      <h3 class="sec">Hors ligne</h3>
+      <p id="off-status" class="backup-status">Vérification…</p>
+      <progress id="off-bar" class="hidden" value="0" max="1"></progress>
+      <div class="sheet-actions">
+        <button id="off-dl" type="button" class="chip strong">⬇️ Télécharger la carte de cette zone</button>
+        <button id="off-clear" type="button" class="chip">🗑️ Vider le cache</button>
+        <button id="off-install" type="button" class="chip hidden">📲 Installer l’application</button>
+      </div>
+      <p id="off-hint" class="backup-status hidden"></p>
+      <p class="backup-status">Télécharge au plus ~500 tuiles du fond affiché (plan ou satellite), sur l’écran actuel et 4 niveaux de zoom. Usage modéré : les serveurs de cartes sont gratuits.</p>
+    </div>
 
     <div id="backup-section">
       <h3 class="sec">Sauvegarde</h3>
@@ -246,11 +264,12 @@
   <div id="toast" class="toast hidden"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="conditions.js?v=20261104b"></script>
-  <script src="app.js?v=20261104b"></script>
-  <script src="maps.js?v=20261104b"></script>
-  <script src="insights.js?v=20261104b"></script>
-  <script src="forecast.js?v=20261104b"></script>
-  <script src="backup.js?v=20261104b"></script>
+  <script src="conditions.js?v=20261105a"></script>
+  <script src="app.js?v=20261105a"></script>
+  <script src="maps.js?v=20261105a"></script>
+  <script src="insights.js?v=20261105a"></script>
+  <script src="forecast.js?v=20261105a"></script>
+  <script src="backup.js?v=20261105a"></script>
+  <script src="offline.js?v=20261105a"></script>
 </body>
 </html>

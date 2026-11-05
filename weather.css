@@ -191,3 +191,9 @@ input[type=datetime-local] {
 .arr { display: inline-block; font-weight: 700; line-height: 1; }
 .lg { padding: 1px 6px; border-radius: 8px; font-size: 12px; }
 .lg.g { background: #e8f6ec; } .lg.o { background: #fdf0e1; } .lg.r { background: #fde7e7; }
+
+/* Mode hors ligne */
+.offline-pill{position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);left:50%;transform:translateX(-50%);z-index:900;background:#b45309;color:#fff;padding:4px 12px;border-radius:14px;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.offline-pill.hidden,#off-bar.hidden,#off-install.hidden,#off-hint.hidden{display:none}
+#off-bar{width:100%;height:8px}
+#offline-section{margin-top:12px}

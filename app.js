@@ -828,8 +828,4 @@
   if (catches.length && !('geolocation' in navigator)) {
     map.fitBounds(L.latLngBounds(catches.map(c => [c.lat, c.lng])).pad(0.3));
   }
-
-  if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    // Emplacement réservé pour un éventuel service worker (mode hors-ligne)
-  }
 })();

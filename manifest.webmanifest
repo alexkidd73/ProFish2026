@@ -1,0 +1,16 @@
+{
+  "name": "Carnet de Pêche",
+  "short_name": "Pêche",
+  "description": "Carnet de prises avec carte, marées et prévisions marines",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b5d7a",
+  "theme_color": "#0b5d7a",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

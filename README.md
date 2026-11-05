@@ -23,6 +23,7 @@ Application web statique (HTML / CSS / JS) pour enregistrer ses prises sur une c
 - Calques de **profondeur d'eau** (bathymétrie EMODnet : fonds marins en couleurs + isobathes), superposables à n'importe quel fond. Indicatif, ne pas utiliser pour la navigation.
 - Calques météo en temps réel (Open-Meteo, sans clé API) : **vent** (nœuds), **température de l'air**, **température de l'eau**, **courant marin** (nœuds). Température de l'eau et courant n'existent qu'en mer.
 - **Sauvegarde** (🗂️ → Sauvegarde) : fichier JSON complet (prises avec photos, poissons ajoutés, réglages), partage vers Drive/Fichiers/e-mail depuis le téléphone, restauration avec choix **Fusionner** (recommandé) ou **Remplacer** (une sauvegarde de l'état actuel est téléchargée avant). Rappel (point rouge sur 🗂️) si des prises ne sont pas sauvegardées depuis 7 jours ou dès 5 nouvelles prises. Les anciens fichiers d'export restent compatibles.
+- **Mode hors ligne** (PWA) : service worker qui met en cache l'application, les cartes consultées et les dernières prévisions/marées (affichées avec la mention « hors ligne »). « 🗂️ → Hors ligne » : télécharger la carte de la zone affichée (~500 tuiles max, plan ou satellite), vider le cache, installer l'application sur l'écran d'accueil. Nécessite HTTPS (GitHub Pages) ou localhost ; les prises restent enregistrées sur l'appareil.
 - Données stockées sur l'appareil (localStorage)
 - Interface adaptée aux smartphones
 
@@ -49,4 +50,5 @@ docker run -d --name carnet-peche -p 8080:80 profish2026
 ## Notes
 - Les photos sont redimensionnées (800 px max) ; le localStorage est limité à ~5 Mo, pensez à exporter régulièrement.
 - Marées : modèle Open-Meteo d'environ 8 km, indicatif et peu précis près des côtes (ne remplace pas un annuaire des marées). Les coefficients ne sont pas disponibles.
+- Hors ligne : le balisage OpenSeaMap et la bathymétrie ne sont mis en cache que s'ils ont été consultés ; les tuiles hors zone téléchargée s'affichent vides.
 - Les données sont propres au navigateur et à l'origine (URL) utilisés.

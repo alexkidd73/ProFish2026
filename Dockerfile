@@ -2,7 +2,8 @@ FROM nginx:1.27-alpine
 
 # Application statique : on ne copie que les fichiers utiles
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY index.html style.css weather.css conditions.js app.js maps.js insights.js forecast.js backup.js /usr/share/nginx/html/
+COPY index.html style.css weather.css conditions.js app.js maps.js insights.js forecast.js backup.js offline.js sw.js manifest.webmanifest /usr/share/nginx/html/
+COPY icons/ /usr/share/nginx/html/icons/
 
 EXPOSE 80
 

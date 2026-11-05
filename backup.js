@@ -11,6 +11,7 @@
   const KEY_BK = 'peche.backup.v1';          // dernière sauvegarde : { at, ids }
   const KEY_CATCHES = 'peche.catches.v1';
   const KEY_CUSTOM = 'peche.customFish.v1';
+  const KEY_SPOTS = 'peche.spots.v1';
   const KEY_MSG = 'peche.msg';               // message à afficher après rechargement (sessionStorage)
   const DAY = 864e5;
   const REMIND_AFTER_DAYS = 7;               // rappel si des prises sont non sauvegardées depuis 7 jours
@@ -18,7 +19,7 @@
 
   const read = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch { return d; } };
   const write = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } };
-  const isDataKey = (k) => k !== KEY_BK && k !== KEY_CATCHES && k !== KEY_CUSTOM;
+  const isDataKey = (k) => k !== KEY_BK && k !== KEY_CATCHES && k !== KEY_CUSTOM && k !== KEY_SPOTS;
   const pecheKeys = () => {
     const out = [];
     for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith(PREFIX)) out.push(k); }
@@ -37,7 +38,7 @@
     pecheKeys().filter(isDataKey).forEach((k) => { settings[k] = read(k, null); });
     return {
       app: 'carnet-peche', version: 2, exportedAt: new Date().toISOString(),
-      catches: A.getCatches(), customFish: read(KEY_CUSTOM, []), settings
+      catches: A.getCatches(), customFish: read(KEY_CUSTOM, []), spots: read(KEY_SPOTS, []), settings
     };
   }
   function makeFile(prefix) {
@@ -128,6 +129,7 @@
     }
     return {
       catches, customFish: Array.isArray(d.customFish) ? d.customFish : [], settings,
+      spots: (Array.isArray(d.spots) ? d.spots : []).filter((s) => s && s.id && isFinite(s.lat) && isFinite(s.lng)),
       exportedAt: d.exportedAt || null, skipped: d.catches.length - catches.length
     };
   }
@@ -189,11 +191,13 @@
     let added = 0;
     pending.catches.forEach((c) => { if (!ids.has(c.id)) { cur.push(c); ids.add(c.id); added++; } });
     const custom = mergeCustom(read(KEY_CUSTOM, []), pending.customFish, cur);
-    if (!write(KEY_CATCHES, cur) || !write(KEY_CUSTOM, custom)) {
+    const spots = read(KEY_SPOTS, []).slice(); const sid = new Set(spots.map((s) => s.id));
+    pending.spots.forEach((s) => { if (!sid.has(s.id)) { spots.push(s); sid.add(s.id); added++; } });
+    if (!write(KEY_CATCHES, cur) || !write(KEY_CUSTOM, custom) || !write(KEY_SPOTS, spots)) {
       toast('Stockage plein : rien n’a été modifié.');
       return;
     }
-    finish(added ? `${added} prise${added > 1 ? 's' : ''} ajoutée${added > 1 ? 's' : ''} depuis la sauvegarde.` : 'Rien à ajouter : tout était déjà présent.');
+    finish(added ? `${added} élément${added > 1 ? 's' : ''} ajouté${added > 1 ? 's' : ''} depuis la sauvegarde (prises et spots).` : 'Rien à ajouter : tout était déjà présent.');
   });
 
   $('restore-replace').addEventListener('click', () => {
@@ -212,6 +216,7 @@
       keys.forEach((k) => localStorage.removeItem(k));
       localStorage.setItem(KEY_CATCHES, JSON.stringify(pending.catches));
       localStorage.setItem(KEY_CUSTOM, JSON.stringify(custom));
+      localStorage.setItem(KEY_SPOTS, JSON.stringify(pending.spots));
       Object.keys(pending.settings).forEach((k) => localStorage.setItem(k, JSON.stringify(pending.settings[k])));
     } catch {
       try {

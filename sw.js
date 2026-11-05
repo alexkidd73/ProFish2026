@@ -3,7 +3,7 @@ const V = 'v1';
 const SHELL = 'peche-shell-' + V, TILES = 'peche-tiles-' + V, API = 'peche-api-' + V;
 const LEAFLET = ['https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'];
 const OWN = ['./', 'index.html', 'style.css', 'weather.css', 'conditions.js', 'app.js', 'maps.js',
-  'insights.js', 'forecast.js', 'backup.js', 'offline.js', 'manifest.webmanifest',
+  'insights.js', 'forecast.js', 'backup.js', 'offline.js', 'spots.js', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 const TILE_HOSTS = ['tile.openstreetmap.org', 'server.arcgisonline.com', 'tiles.openseamap.org'];
 const API_HOSTS = ['api.open-meteo.com', 'marine-api.open-meteo.com', 'ows.emodnet-bathymetry.eu'];

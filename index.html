@@ -10,8 +10,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>Carnet de Pêche</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=20261105a">
-  <link rel="stylesheet" href="weather.css?v=20261105a">
+  <link rel="stylesheet" href="style.css?v=20261105b">
+  <link rel="stylesheet" href="weather.css?v=20261105b">
 </head>
 <body>
   <div id="map"></div>
@@ -21,6 +21,7 @@
     <button id="btn-layers" class="round" aria-label="Calques">🗂️</button>
     <button id="btn-locate" class="round" aria-label="Ma position">📍</button>
     <button id="btn-list" class="round" aria-label="Mes prises">📋</button>
+    <button id="btn-spots" class="round" aria-label="Mes spots" title="Mes spots">📌</button>
     <button id="btn-tide" class="round" aria-label="Marées et lune" title="Marées et lune">🌙</button>
     <button id="btn-forecast" class="round" aria-label="Prévisions météo marine" title="Prévisions météo marine">📅</button>
     <button id="btn-boat" class="round" aria-label="Remplacer le bateau par un point bleu" title="Bateau / point bleu">🔵</button>
@@ -256,6 +257,42 @@
     </div>
   </div>
 
+  <aside id="spots-panel" class="sheet hidden" aria-label="Mes spots">
+    <div class="sheet-head"><h2>📌 Mes spots</h2><button class="close" data-close="spots-panel" aria-label="Fermer">✕</button></div>
+    <div class="sheet-actions">
+      <button id="spot-add" type="button" class="chip strong">➕ Nouveau spot</button>
+      <button id="spots-toggle" type="button" class="chip">👁️</button>
+    </div>
+    <div id="spots-filter" class="sheet-actions"></div>
+    <p id="spots-count" class="backup-status"></p>
+    <ul id="spots-list" class="spots-list"></ul>
+  </aside>
+
+  <div id="spot-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="spot-title">
+    <div class="modal-box">
+      <div class="sheet-head"><h2 id="spot-title">Nouveau spot</h2><button class="close" id="spot-close" type="button" aria-label="Fermer">✕</button></div>
+      <form id="spot-form">
+        <label>Type<select id="spot-type"></select></label>
+        <label id="spot-label-row" class="hidden">Précisez le type<input id="spot-label" maxlength="40"></label>
+        <label>Nom (facultatif)<input id="spot-name" maxlength="60" placeholder="ex. Tombant de la pointe"></label>
+        <label>Profondeur (m)<input id="spot-depth" type="number" min="0" step="0.1" inputmode="decimal"></label>
+        <label>Note<textarea id="spot-note" rows="2" maxlength="300"></textarea></label>
+        <p class="posline">📍 <span id="spot-pos"></span></p>
+        <div class="sheet-actions">
+          <button type="button" id="spot-me" class="chip">📍 Ma position</button>
+          <button type="button" id="spot-pick" class="chip">🗺️ Choisir sur la carte</button>
+        </div>
+        <button type="submit" class="primary">Enregistrer le spot</button>
+        <button type="button" id="spot-del" class="primary danger-btn hidden">🗑️ Supprimer</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="spot-banner" class="pick-banner hidden" role="status">
+    <span>📌 Touchez la carte pour placer le spot</span>
+    <button type="button" id="spot-cancel-pick" class="chip">Annuler</button>
+  </div>
+
   <div id="pick-banner" class="pick-banner hidden" role="status">
     <span>📍 Touchez la carte pour placer la prise</span>
     <button type="button" id="pick-cancel" class="chip">Annuler</button>
@@ -264,12 +301,13 @@
   <div id="toast" class="toast hidden"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="conditions.js?v=20261105a"></script>
-  <script src="app.js?v=20261105a"></script>
-  <script src="maps.js?v=20261105a"></script>
-  <script src="insights.js?v=20261105a"></script>
-  <script src="forecast.js?v=20261105a"></script>
-  <script src="backup.js?v=20261105a"></script>
-  <script src="offline.js?v=20261105a"></script>
+  <script src="conditions.js?v=20261105b"></script>
+  <script src="app.js?v=20261105b"></script>
+  <script src="maps.js?v=20261105b"></script>
+  <script src="insights.js?v=20261105b"></script>
+  <script src="forecast.js?v=20261105b"></script>
+  <script src="backup.js?v=20261105b"></script>
+  <script src="spots.js?v=20261105b"></script>
+  <script src="offline.js?v=20261105b"></script>
 </body>
 </html>

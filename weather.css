@@ -197,3 +197,18 @@ input[type=datetime-local] {
 .offline-pill.hidden,#off-bar.hidden,#off-install.hidden,#off-hint.hidden{display:none}
 #off-bar{width:100%;height:8px}
 #offline-section{margin-top:12px}
+
+/* Spots */
+.spot-marker{width:30px;height:30px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 1px 5px rgba(0,0,0,.45)}
+#spots-panel{z-index:850;max-height:75vh;overflow:auto}
+.spots-list{list-style:none;margin:0;padding:0}
+.spot-item{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid #0001}
+.spot-ico{flex:none;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px}
+.spot-txt{flex:1;min-width:0;display:flex;flex-direction:column}
+.spot-txt small{color:#555;overflow-wrap:anywhere}
+.spot-btns{display:flex;gap:4px}
+#spot-modal{z-index:1100}
+#spot-modal label{display:block;margin:8px 0;font-size:14px}
+#spot-modal input,#spot-modal select,#spot-modal textarea{display:block;width:100%;box-sizing:border-box;margin-top:3px;font-size:16px;padding:8px;border:1px solid #0003;border-radius:8px}
+#spot-banner{z-index:1200}
+.chip.on{background:#0b5d7a;color:#fff}

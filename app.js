@@ -150,6 +150,7 @@
 
   // ---------- Géolocalisation ----------
   let me = null, meMarker = null, accCircle = null, firstFix = true;
+  const fixListeners = [];                       // abonnés aux positions GPS (sorties de pêche)
 
   // Mon bateau : illustration SVG (coque blanche à bande rouge, cabine jaune, nez de clown à la proue)
   const BOAT_NAME = 'Le clown de Brescou';
@@ -209,6 +210,7 @@
       accCircle.setLatLng([lat, lng]).setRadius(accuracy);
     }
     $('gps-status').textContent = `GPS ±${Math.round(accuracy)} m`;
+    fixListeners.forEach(f => { try { f(me); } catch { /* ignoré */ } });
     // Le bateau regarde vers la gauche ou la droite selon le cap (quand on avance)
     const { heading, speed } = pos.coords;
     if (heading != null && !isNaN(heading) && (speed || 0) > 0.5) {
@@ -393,7 +395,7 @@
       b.type = 'button'; b.className = 'fish-btn' + (editFish ? ' edit' : '');
       b.innerHTML = `<span class="ico" style="background:${colorOf(name)}33">${iconOf(name)}</span><span>${esc(name)}</span>` +
         (editFish ? '<span class="x" aria-hidden="true">✕</span>' : '');
-      b.addEventListener('click', () => (editFish ? removeFish(name) : pickFish(name)));
+      b.addEventListener('click', () => (editFish ? removeFish(name) : quickOrPick(name)));
       grid.appendChild(b);
     });
     if (!editFish) {
@@ -470,6 +472,35 @@
   }
   const closeModal = () => modal.classList.add('hidden');
 
+  // ---------- Saisie rapide ----------
+  let express = false, expressPending = false;
+  try { express = JSON.parse(localStorage.getItem('peche.express.v1')) === true; } catch { /* défaut */ }
+  $('express-toggle').checked = express;
+  $('express-toggle').addEventListener('change', (e) => {
+    express = e.target.checked; save('peche.express.v1', express);
+  });
+  function quickOrPick(name) {
+    pickFish(name);
+    if (!express || editingId) return;
+    if (!me) { toast('GPS indisponible : vérifiez la position avant d’enregistrer.'); return; }
+    const f = $('step-form');
+    expressPending = true;
+    try { if (f.requestSubmit) f.requestSubmit(); else f.dispatchEvent(new Event('submit', { cancelable: true })); }
+    finally { expressPending = false; }
+  }
+  // Leurre / appât de la dernière prise récente (12 h) proposés par défaut
+  function prefillFromLast() {
+    const last = catches.filter(c => Date.now() - new Date(c.date).getTime() < 12 * 3600e3)
+      .sort((x, y) => new Date(y.date) - new Date(x.date))[0];
+    if (!last) return;
+    if (last.lure) {
+      if (last.lure.type) setSelect('f-lure', last.lure.type);
+      if (last.lure.color) $('f-lure-color').value = last.lure.color;
+      if (last.lure.weight) $('f-lure-weight').value = last.lure.weight;
+    }
+    if (last.bait) setSelect('f-bait', last.bait);
+  }
+
   function pickFish(name) {
     selectedFish = name;
     $('picked-badge').innerHTML = `<span class="dot" style="background:${colorOf(name)}"></span>${esc(name)}`;
@@ -482,6 +513,7 @@
         ? { lat: me.lat, lng: me.lng, src: `GPS actuel (±${Math.round(me.accuracy)} m)` }
         : { lat: map.getCenter().lat, lng: map.getCenter().lng, src: 'centre de la carte (GPS indisponible)' };
       initDepth();
+      prefillFromLast();
     }
     paintPos();
   }
@@ -601,6 +633,7 @@
     closeModal();
     map.setView([c.lat, c.lng], Math.max(map.getZoom(), 15));
     toast(`${c.fish} enregistré ! 🎉`);
+    document.dispatchEvent(new CustomEvent('peche:catch-saved', { detail: { catch: c, express: expressPending } }));
     // Conditions du moment (vent, température, courant, marée) : récupérées en arrière-plan
     if (window.FishCond) {
       FishCond.enrich(c).then(() => { save(KEY_CATCHES, catches); refreshList(); }).catch(() => {});
@@ -742,7 +775,8 @@
     getCatches: () => catches,
     getPos: () => me,
     persist: () => save(KEY_CATCHES, catches),
-    refreshList, startEdit
+    refreshList, startEdit, deleteCatch,
+    onFix: (f) => { fixListeners.push(f); if (me) f(me); }
   };
 
   // ---------- Modification d'une prise ----------

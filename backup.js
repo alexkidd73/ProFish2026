@@ -12,6 +12,7 @@
   const KEY_CATCHES = 'peche.catches.v1';
   const KEY_CUSTOM = 'peche.customFish.v1';
   const KEY_SPOTS = 'peche.spots.v1';
+  const KEY_TRIPS = 'peche.trips.v1';
   const KEY_MSG = 'peche.msg';               // message à afficher après rechargement (sessionStorage)
   const DAY = 864e5;
   const REMIND_AFTER_DAYS = 7;               // rappel si des prises sont non sauvegardées depuis 7 jours
@@ -19,7 +20,7 @@
 
   const read = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch { return d; } };
   const write = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } };
-  const isDataKey = (k) => k !== KEY_BK && k !== KEY_CATCHES && k !== KEY_CUSTOM && k !== KEY_SPOTS;
+  const isDataKey = (k) => k !== KEY_BK && k !== KEY_CATCHES && k !== KEY_CUSTOM && k !== KEY_SPOTS && k !== KEY_TRIPS;
   const pecheKeys = () => {
     const out = [];
     for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith(PREFIX)) out.push(k); }
@@ -38,7 +39,7 @@
     pecheKeys().filter(isDataKey).forEach((k) => { settings[k] = read(k, null); });
     return {
       app: 'carnet-peche', version: 2, exportedAt: new Date().toISOString(),
-      catches: A.getCatches(), customFish: read(KEY_CUSTOM, []), spots: read(KEY_SPOTS, []), settings
+      catches: A.getCatches(), customFish: read(KEY_CUSTOM, []), spots: read(KEY_SPOTS, []), trips: read(KEY_TRIPS, []).filter((t) => t && t.end), settings
     };
   }
   function makeFile(prefix) {
@@ -129,6 +130,7 @@
     }
     return {
       catches, customFish: Array.isArray(d.customFish) ? d.customFish : [], settings,
+      trips: (Array.isArray(d.trips) ? d.trips : []).filter((t) => t && t.id && t.start && t.end),
       spots: (Array.isArray(d.spots) ? d.spots : []).filter((s) => s && s.id && isFinite(s.lat) && isFinite(s.lng)),
       exportedAt: d.exportedAt || null, skipped: d.catches.length - catches.length
     };
@@ -193,11 +195,13 @@
     const custom = mergeCustom(read(KEY_CUSTOM, []), pending.customFish, cur);
     const spots = read(KEY_SPOTS, []).slice(); const sid = new Set(spots.map((s) => s.id));
     pending.spots.forEach((s) => { if (!sid.has(s.id)) { spots.push(s); sid.add(s.id); added++; } });
-    if (!write(KEY_CATCHES, cur) || !write(KEY_CUSTOM, custom) || !write(KEY_SPOTS, spots)) {
+    const trips = read(KEY_TRIPS, []).slice(); const tid = new Set(trips.map((t) => t.id));
+    pending.trips.forEach((t) => { if (!tid.has(t.id)) { trips.push(t); tid.add(t.id); added++; } });
+    if (!write(KEY_CATCHES, cur) || !write(KEY_CUSTOM, custom) || !write(KEY_SPOTS, spots) || !write(KEY_TRIPS, trips)) {
       toast('Stockage plein : rien n’a été modifié.');
       return;
     }
-    finish(added ? `${added} élément${added > 1 ? 's' : ''} ajouté${added > 1 ? 's' : ''} depuis la sauvegarde (prises et spots).` : 'Rien à ajouter : tout était déjà présent.');
+    finish(added ? `${added} élément${added > 1 ? 's' : ''} ajouté${added > 1 ? 's' : ''} depuis la sauvegarde (prises, spots et sorties).` : 'Rien à ajouter : tout était déjà présent.');
   });
 
   $('restore-replace').addEventListener('click', () => {
@@ -217,6 +221,7 @@
       localStorage.setItem(KEY_CATCHES, JSON.stringify(pending.catches));
       localStorage.setItem(KEY_CUSTOM, JSON.stringify(custom));
       localStorage.setItem(KEY_SPOTS, JSON.stringify(pending.spots));
+      localStorage.setItem(KEY_TRIPS, JSON.stringify(pending.trips));
       Object.keys(pending.settings).forEach((k) => localStorage.setItem(k, JSON.stringify(pending.settings[k])));
     } catch {
       try {

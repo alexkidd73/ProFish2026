@@ -227,3 +227,17 @@ svg.curve .area{fill:#6aa7bd44}
 svg.curve .line{fill:none;stroke:var(--primary);stroke-width:2.5;stroke-linejoin:round}
 svg.curve .dot{fill:#fff;stroke:var(--primary);stroke-width:1.5}
 svg.curve .dot.best{fill:#f4b942;stroke:#b3402a}
+
+/* Sorties et prise express */
+#trips-panel{z-index:850;max-height:75vh;overflow:auto}
+.trip{border-top:1px solid #0001;padding:8px 0;font-size:14px}
+.trip small{color:#555;display:block}
+.trip-active{background:#fff1f2;border:1px solid #e11d4855;border-radius:12px;padding:10px;font-size:14px}
+.trip-pill{position:fixed;z-index:520;left:12px;bottom:calc(84px + var(--safe-b,0px));background:#e11d48;color:#fff;padding:8px 14px;border-radius:20px;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.35);cursor:pointer}
+.trip-pill.hidden,.express-bar.hidden{display:none}
+.express{display:flex;gap:8px;align-items:flex-start;font-size:13px;margin:6px 0 10px;background:#fff7e0;border-radius:10px;padding:8px}
+.express input{margin-top:3px}
+.express-bar{position:fixed;z-index:1300;left:50%;transform:translateX(-50%);bottom:calc(90px + var(--safe-b,0px));width:min(92vw,420px);display:flex;gap:8px;align-items:center;background:#0f5132;color:#fff;padding:10px 12px;border-radius:12px;box-shadow:0 3px 12px rgba(0,0,0,.4)}
+.express-bar span{flex:1}
+.express-bar .chip{background:#fff;color:#0f5132}
+.bar-row.rate{grid-template-columns:minmax(84px,34%) 1fr 58px}

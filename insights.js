@@ -231,6 +231,35 @@
     return `<div class="curve-tools"><label>Variable<select id="curve-var">${opt(VARS, curveVar)}</select></label><label>Mesure<select id="curve-metric">${opt(METRICS, curveMetric)}</select></label></div>`;
   }
 
+
+  // ---------- Sorties : rendement (prises par heure de pêche) ----------
+  function tripsHtml(sp) {
+    const FT = window.fishTrips; if (!FT) return '';
+    const T = FT.get().filter((t) => t.end && FT.hoursOf(t) >= 1 / 6)
+      .map((t) => ({ t, h: FT.hoursOf(t), n: FT.catchesOf(t).filter((c) => !sp || c.fish === sp).length }));
+    if (!T.length) return '';
+    const H = T.reduce((a, r) => a + r.h, 0), N = T.reduce((a, r) => a + r.n, 0), blank = T.filter((r) => !r.n).length;
+    const fr = (v) => v.toFixed(1).replace('.', ',');
+    const tile = (v, l) => `<div class="tile"><strong>${v}</strong><span>${l}</span></div>`;
+    let html = `<section class="stat"><h3>⏱️ Sorties <small>${T.length} sortie${T.length > 1 ? 's' : ''}</small></h3><div class="tiles">${tile(fr(N / H), 'prises / heure')}${tile(H >= 10 ? Math.round(H) + ' h' : fr(H) + ' h', 'à pêcher')}${tile(Math.round(blank / T.length * 100) + ' %', 'bredouilles')}</div></section>`;
+    const by = (title, icon, keyOf, order) => {
+      const m = new Map();
+      T.forEach((r) => { const k = keyOf(r.t); if (k == null) return; const o = m.get(k) || { h: 0, n: 0, s: 0 }; o.h += r.h; o.n += r.n; o.s++; m.set(k, o); });
+      const es = (order || [...m.keys()]).filter((k) => m.has(k) && m.get(k).h >= 1).map((k) => [k, m.get(k)]);
+      if (es.length < 2) return '';
+      const mx = Math.max(...es.map(([, o]) => o.n / o.h)) || 1;
+      return `<section class="stat"><h3>${icon} Rendement selon ${esc(title)}</h3>` + es.map(([k, o]) => {
+        const r = o.n / o.h;
+        return `<div class="bar-row rate${r === mx && mx > 0 ? ' top' : ''}" title="${esc(k)} : ${o.n} prise(s) en ${fr(o.h)} h, ${o.s} sortie(s)"><span class="bar-label">${esc(k)}</span><span class="bar"><i style="width:${Math.max(4, r / mx * 100).toFixed(0)}%"></i></span><span class="bar-n">${fr(r)}/h</span></div>`;
+      }).join('') + '<p class="hint">Prises par heure, sorties bredouilles incluses (tranches avec au moins 1 h de pêche).</p></section>';
+    };
+    html += by("la température de l'eau", '🌡️', (t) => t.cond && t.cond.sea != null ? bucketOf(t.cond.sea, SEA) : null, labelsOf(SEA));
+    html += by('le vent', '💨', (t) => t.cond && t.cond.wind != null ? bucketOf(t.cond.wind, WIND) : null, labelsOf(WIND));
+    html += by('le moment de départ', '🕐', (t) => dayPart({ date: t.start }), DAYPART);
+    html += by('la lune', '🌙', (t) => t.cond && t.cond.moon && C.MOONS[t.cond.moon.i] ? C.MOONS[t.cond.moon.i][0] : null, C.MOONS.map((m) => m[0]));
+    return html;
+  }
+
   function renderStats() {
     const all = A.getCatches();
     const sel = $('stats-filter');
@@ -251,7 +280,10 @@
       return;
     }
     let html = summaryHtml(list);
-    html += '<p class="hint">Ces statistiques comptent vos <strong>prises</strong> : elles montrent avec quoi, où et quand vous avez pêché, pas un taux de réussite (les sorties sans prise ne sont pas enregistrées).</p>';
+    html += window.fishTrips && window.fishTrips.get().some((t) => t.end)
+      ? '<p class="hint">Les barres ci-dessous comptent vos <strong>prises</strong> ; le rendement (prises par heure) vient de vos <strong>sorties</strong>, bredouilles comprises.</p>'
+      : '<p class="hint">Ces statistiques comptent vos <strong>prises</strong>, pas un taux de réussite. Démarrez une <strong>sortie</strong> (⏱️) pour mesurer un vrai rendement, sorties bredouilles comprises.</p>';
+    html += tripsHtml(sel.value);
     if (!sel.value) html += barSection(species, list);
     html += SECTIONS.map((s) => barSection(s, list)).join('');
     if (list.some((c) => !c.cond || c.cond.pending)) {

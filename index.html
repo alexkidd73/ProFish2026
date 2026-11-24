@@ -10,8 +10,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>Carnet de Pêche</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=20261124a">
-  <link rel="stylesheet" href="weather.css?v=20261124a">
+  <link rel="stylesheet" href="style.css?v=20261124b">
+  <link rel="stylesheet" href="weather.css?v=20261124b">
 </head>
 <body>
   <div id="map"></div>
@@ -22,6 +22,7 @@
     <button id="btn-locate" class="round" aria-label="Ma position">📍</button>
     <button id="btn-list" class="round" aria-label="Mes prises">📋</button>
     <button id="btn-spots" class="round" aria-label="Mes spots" title="Mes spots">📌</button>
+    <button id="btn-trip" class="round" aria-label="Sorties de pêche" title="Sorties de pêche">⏱️</button>
     <button id="btn-tide" class="round" aria-label="Marées et lune" title="Marées et lune">🌙</button>
     <button id="btn-forecast" class="round" aria-label="Prévisions météo marine" title="Prévisions météo marine">📅</button>
     <button id="btn-boat" class="round" aria-label="Remplacer le bateau par un point bleu" title="Bateau / point bleu">🔵</button>
@@ -183,6 +184,7 @@
           <button type="button" data-water="sea">🌊 Mer / océan</button>
         </div>
         <p id="water-hint" class="hint"></p>
+        <label class="express"><input type="checkbox" id="express-toggle"> ⚡ Prise express : un toucher sur le poisson enregistre tout de suite (GPS et heure actuels)</label>
         <div id="fish-grid" class="fish-grid"></div>
         <div class="fish-tools">
           <button id="fish-edit" type="button" class="chip">✏️ Modifier la liste</button>
@@ -261,6 +263,13 @@
     </div>
   </div>
 
+  <aside id="trips-panel" class="sheet hidden" aria-label="Sorties de pêche">
+    <div class="sheet-head"><h2>⏱️ Sorties</h2><button class="close" data-close="trips-panel" aria-label="Fermer">✕</button></div>
+    <div id="trips-body"></div>
+  </aside>
+  <div id="trip-pill" class="trip-pill hidden" role="button" tabindex="0"></div>
+  <div id="express-bar" class="express-bar hidden" role="status"></div>
+
   <aside id="spots-panel" class="sheet hidden" aria-label="Mes spots">
     <div class="sheet-head"><h2>📌 Mes spots</h2><button class="close" data-close="spots-panel" aria-label="Fermer">✕</button></div>
     <div class="sheet-actions">
@@ -305,13 +314,14 @@
   <div id="toast" class="toast hidden"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="conditions.js?v=20261124a"></script>
-  <script src="app.js?v=20261124a"></script>
-  <script src="maps.js?v=20261124a"></script>
-  <script src="insights.js?v=20261124a"></script>
-  <script src="forecast.js?v=20261124a"></script>
-  <script src="backup.js?v=20261124a"></script>
-  <script src="spots.js?v=20261124a"></script>
-  <script src="offline.js?v=20261124a"></script>
+  <script src="conditions.js?v=20261124b"></script>
+  <script src="app.js?v=20261124b"></script>
+  <script src="maps.js?v=20261124b"></script>
+  <script src="insights.js?v=20261124b"></script>
+  <script src="forecast.js?v=20261124b"></script>
+  <script src="backup.js?v=20261124b"></script>
+  <script src="trips.js?v=20261124b"></script>
+  <script src="spots.js?v=20261124b"></script>
+  <script src="offline.js?v=20261124b"></script>
 </body>
 </html>

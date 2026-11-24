@@ -212,3 +212,18 @@ input[type=datetime-local] {
 #spot-modal input,#spot-modal select,#spot-modal textarea{display:block;width:100%;box-sizing:border-box;margin-top:3px;font-size:16px;padding:8px;border:1px solid #0003;border-radius:8px}
 #spot-banner{z-index:1200}
 .chip.on{background:#0b5d7a;color:#fff}
+
+/* Onglets et courbes des statistiques */
+.tabs{display:flex;gap:6px;padding:0 12px 6px}
+.tabs button{flex:1;padding:8px;border:1px solid #0b5d7a55;background:#fff;border-radius:10px;font-size:15px;color:var(--text)}
+.tabs button.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.curve-tools{display:flex;gap:8px;margin-top:10px}
+.curve-tools label{flex:1;font-size:13px;color:var(--muted)}
+.curve-tools select{display:block;width:100%;box-sizing:border-box;margin-top:3px;font-size:15px;padding:8px;border:1px solid #0003;border-radius:8px;background:#fff;color:var(--text)}
+svg.curve{width:100%;height:auto;display:block}
+svg.curve .grid{stroke:#0002;stroke-dasharray:3 3}
+svg.curve .ax{font-size:10px;fill:#666}
+svg.curve .area{fill:#6aa7bd44}
+svg.curve .line{fill:none;stroke:var(--primary);stroke-width:2.5;stroke-linejoin:round}
+svg.curve .dot{fill:#fff;stroke:var(--primary);stroke-width:1.5}
+svg.curve .dot.best{fill:#f4b942;stroke:#b3402a}

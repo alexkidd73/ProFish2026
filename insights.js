@@ -174,6 +174,63 @@
         (byW ? `<div>🏆 Plus lourde : <strong>${byW.weight} kg</strong> — ${esc(byW.fish)}</div>` : '') + '</div>' : '');
   }
 
+
+  // ---------- Courbes : prises en fonction d'une variable ----------
+  const MONTHS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+  const VARS = {
+    sea: { label: 'Température eau', unit: '°C', step: 1, val: (c) => c.cond && c.cond.sea },
+    air: { label: 'Température air', unit: '°C', step: 1, val: (c) => c.cond && c.cond.air },
+    wind: { label: 'Vent', unit: 'kt', step: 2, val: (c) => c.cond && c.cond.wind },
+    press: { label: 'Pression', unit: 'hPa', step: 3, val: (c) => c.cond && c.cond.press },
+    cur: { label: 'Courant', unit: 'kt', step: 0.2, val: (c) => c.cond && c.cond.cur },
+    depth: { label: 'Profondeur', unit: 'm', step: 5, val: (c) => c.depth },
+    hour: { label: 'Heure de la journée', unit: 'h', step: 1, val: (c) => new Date(c.date).getHours(), fixed: [0, 23] },
+    month: { label: 'Mois', unit: '', step: 1, val: (c) => new Date(c.date).getMonth(), fixed: [0, 11], fmt: (v) => MONTHS[v] }
+  };
+  const METRICS = { count: 'Nombre de prises', size: 'Taille moyenne (cm)' };
+  let curveVar = 'sea', curveMetric = 'count', tab = 'bars';
+
+  function curveChart(list) {
+    const V = VARS[curveVar], isCount = curveMetric === 'count';
+    const pts = list.map((c) => ({ v: V.val(c), c })).filter((p) => p.v != null && isFinite(p.v));
+    if (!pts.length) return '<p class="empty">Pas encore de données « ' + esc(V.label.toLowerCase()) + ' » pour ces prises.</p>';
+    const bin = (v) => Math.floor(v / V.step + 1e-9);
+    const lo = V.fixed ? V.fixed[0] : Math.min(...pts.map((p) => bin(p.v)));
+    const hi = V.fixed ? V.fixed[1] : Math.max(...pts.map((p) => bin(p.v)));
+    const nb = hi - lo + 1;
+    const cnt = new Array(nb).fill(0), sz = new Array(nb).fill(0), szn = new Array(nb).fill(0);
+    pts.forEach(({ v, c }) => { const i = bin(v) - lo; if (i < 0 || i >= nb) return; cnt[i]++; if (c.size) { sz[i] += c.size; szn[i]++; } });
+    const y = isCount ? cnt : sz.map((t, i) => (szn[i] ? t / szn[i] : null));
+    const sm = isCount ? cnt.map((_, i) => ((cnt[i - 1] || 0) + 2 * cnt[i] + (cnt[i + 1] || 0)) / (i === 0 || i === nb - 1 ? 3 : 4)) : y;
+    const vals = y.filter((v) => v != null);
+    if (!vals.length) return '<p class="empty">Aucune taille renseignée pour ces prises.</p>';
+    const ymax = Math.max(...vals, ...sm.filter((v) => v != null)) || 1;
+    const W = 340, H = 200, L = 34, R = 10, T = 12, B = 34, pw = W - L - R, ph = H - T - B;
+    const X = (i) => L + (nb === 1 ? pw / 2 : (i / (nb - 1)) * pw), Y = (v) => T + ph - (v / ymax) * ph;
+    const lab = (i) => V.fmt ? V.fmt(lo + i) : String(+((lo + i) * V.step).toFixed(2));
+    const nTicks = Math.min(nb, 6), ticks = [...new Set(Array.from({ length: nTicks }, (_, k) => Math.round(k * (nb - 1) / Math.max(1, nTicks - 1))))];
+    const path = (arr) => { let d = '', pen = false; arr.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); pen = true; }); return d; };
+    const best = y.indexOf(Math.max(...vals));
+    const fmtY = (v) => (isCount ? String(Math.round(v)) : v.toFixed(0));
+    let svg = `<svg viewBox="0 0 ${W} ${H}" class="curve" role="img" aria-label="${esc(METRICS[curveMetric])} selon ${esc(V.label)}">`;
+    [0, 0.5, 1].forEach((f) => { const yy = T + ph - f * ph; svg += `<line x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}" class="grid"/><text x="${L - 4}" y="${yy + 4}" class="ax" text-anchor="end">${fmtY(ymax * f)}</text>`; });
+    ticks.forEach((i) => { svg += `<text x="${X(i)}" y="${H - B + 14}" class="ax" text-anchor="middle">${esc(lab(i))}</text>`; });
+    svg += `<text x="${L + pw / 2}" y="${H - 4}" class="ax" text-anchor="middle">${esc(V.label)}${V.unit ? ' (' + esc(V.unit) + ')' : ''}</text>`;
+    if (isCount) svg += `<path d="${path(sm)}L${X(nb - 1)} ${T + ph}L${X(0)} ${T + ph}Z" class="area"/>`;
+    svg += `<path d="${path(isCount ? sm : y)}" class="line"/>`;
+    y.forEach((v, i) => { if (v == null) return; svg += `<circle cx="${X(i)}" cy="${Y(v)}" r="${i === best ? 5 : 3}" class="dot${i === best ? ' best' : ''}"><title>${esc(lab(i))}${V.unit ? ' ' + esc(V.unit) : ''} : ${isCount ? v + ' prise' + (v > 1 ? 's' : '') : v.toFixed(1) + ' cm (' + szn[i] + ' prise' + (szn[i] > 1 ? 's' : '') + ')'}</title></circle>`; });
+    svg += '</svg>';
+    const bl = lab(best) + (V.unit ? ' ' + V.unit : '');
+    const range = V.step > 1 || V.step < 1 ? ` (tranche ${+((lo + best) * V.step).toFixed(2)}–${+((lo + best + 1) * V.step).toFixed(2)})` : '';
+    return `<section class="stat"><h3>📈 ${esc(METRICS[curveMetric])} <small>${pts.length} / ${list.length} prises renseignées</small></h3>${svg}` +
+      `<p class="hint">Point le plus haut : <strong>${esc(bl)}</strong>${V.fixed ? '' : esc(range)}. ${isCount ? 'La courbe est lissée ; les points sont les valeurs réelles.' : 'Moyenne des tailles renseignées par tranche.'} ${pts.length < 15 ? '⚠️ Peu de prises : la courbe est surtout indicative.' : ''}</p></section>` +
+      '<p class="hint">Elle montre où vous avez pêché le plus, pas où le poisson mord le mieux (les sorties sans prise ne sont pas enregistrées).</p>';
+  }
+  function curvesTools() {
+    const opt = (o, cur) => Object.entries(o).map(([k, v]) => `<option value="${k}"${k === cur ? ' selected' : ''}>${esc(typeof v === 'string' ? v : v.label)}</option>`).join('');
+    return `<div class="curve-tools"><label>Variable<select id="curve-var">${opt(VARS, curveVar)}</select></label><label>Mesure<select id="curve-metric">${opt(METRICS, curveMetric)}</select></label></div>`;
+  }
+
   function renderStats() {
     const all = A.getCatches();
     const sel = $('stats-filter');
@@ -186,6 +243,13 @@
     if (!list.length) { body.innerHTML = '<p class="empty">Aucune prise à analyser.</p>'; return; }
 
     const species = { icon: '🐟', title: 'Espèces', key: (c) => c.fish };
+    $('stats-tabs').querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab));
+    if (tab === 'curves') {
+      body.innerHTML = curvesTools() + curveChart(list);
+      $('curve-var').addEventListener('change', (e) => { curveVar = e.target.value; renderStats(); });
+      $('curve-metric').addEventListener('change', (e) => { curveMetric = e.target.value; renderStats(); });
+      return;
+    }
     let html = summaryHtml(list);
     html += '<p class="hint">Ces statistiques comptent vos <strong>prises</strong> : elles montrent avec quoi, où et quand vous avez pêché, pas un taux de réussite (les sorties sans prise ne sont pas enregistrées).</p>';
     if (!sel.value) html += barSection(species, list);
@@ -217,4 +281,5 @@
   $('btn-stats').addEventListener('click', openStats);
   $('stats-back').addEventListener('click', closeStats);
   $('stats-filter').addEventListener('change', renderStats);
+  $('stats-tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (b) { tab = b.dataset.tab; renderStats(); stats.scrollTop = 0; } });
 })();

@@ -10,8 +10,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>Carnet de Pêche</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=20261105b">
-  <link rel="stylesheet" href="weather.css?v=20261105b">
+  <link rel="stylesheet" href="style.css?v=20261124a">
+  <link rel="stylesheet" href="weather.css?v=20261124a">
 </head>
 <body>
   <div id="map"></div>
@@ -145,6 +145,10 @@
       <select id="stats-filter" aria-label="Filtrer par espèce">
         <option value="">Toutes les espèces</option>
       </select>
+    </div>
+    <div id="stats-tabs" class="tabs" role="tablist">
+      <button type="button" data-tab="bars" class="on">📊 Résumé</button>
+      <button type="button" data-tab="curves">📈 Courbes</button>
     </div>
     <div id="stats-body" class="page-list"></div>
   </section>
@@ -301,13 +305,13 @@
   <div id="toast" class="toast hidden"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="conditions.js?v=20261105b"></script>
-  <script src="app.js?v=20261105b"></script>
-  <script src="maps.js?v=20261105b"></script>
-  <script src="insights.js?v=20261105b"></script>
-  <script src="forecast.js?v=20261105b"></script>
-  <script src="backup.js?v=20261105b"></script>
-  <script src="spots.js?v=20261105b"></script>
-  <script src="offline.js?v=20261105b"></script>
+  <script src="conditions.js?v=20261124a"></script>
+  <script src="app.js?v=20261124a"></script>
+  <script src="maps.js?v=20261124a"></script>
+  <script src="insights.js?v=20261124a"></script>
+  <script src="forecast.js?v=20261124a"></script>
+  <script src="backup.js?v=20261124a"></script>
+  <script src="spots.js?v=20261124a"></script>
+  <script src="offline.js?v=20261124a"></script>
 </body>
 </html>

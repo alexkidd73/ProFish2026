@@ -34,7 +34,13 @@
     try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch { return def; }
   };
   const save = (k, v) => {
-    try { localStorage.setItem(k, JSON.stringify(v)); return true; }
+    try {
+      if (k === KEY_CATCHES && window.PhotoStore) { // photos dans IndexedDB, copie allégée dans le localStorage
+        PhotoStore.putMany(v);
+        localStorage.setItem(k, JSON.stringify(PhotoStore.strip(v)));
+      } else localStorage.setItem(k, JSON.stringify(v));
+      return true;
+    }
     catch { toast('Stockage plein : supprime des prises ou photos.'); return false; }
   };
 
@@ -553,7 +559,7 @@
   $('custom-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addCustom(); } });
 
   // Photo : redimensionnement pour économiser le stockage
-  function resizeImage(file, max = 800, quality = 0.7) {
+  function resizeImage(file, max = 1024, quality = 0.75) {
     return new Promise((resolve, reject) => {
       const img = new Image();
       const url = URL.createObjectURL(file);
@@ -776,6 +782,9 @@
     getPos: () => me,
     persist: () => save(KEY_CATCHES, catches),
     refreshList, startEdit, deleteCatch,
+    stripForStorage: (l) => (window.PhotoStore ? PhotoStore.strip(l) : l),
+    storeCatches: (l, keepOthers) => (window.PhotoStore ? PhotoStore.putMany(l, keepOthers) : Promise.resolve(false)),
+    photosReady: () => !window.PhotoStore || PhotoStore.loaded,
     onFix: (f) => { fixListeners.push(f); if (me) f(me); }
   };
 
@@ -861,5 +870,17 @@
   }
   if (catches.length && !('geolocation' in navigator)) {
     map.fitBounds(L.latLngBounds(catches.map(c => [c.lat, c.lng])).pad(0.3));
+  }
+
+  // Photos : chargement depuis IndexedDB (et migration des anciennes photos du localStorage)
+  if (window.PhotoStore) {
+    PhotoStore.onFail = () => {
+      save(KEY_CATCHES, catches);
+      toast('Stockage des photos indisponible : elles restent dans le navigateur.');
+    };
+    PhotoStore.init(catches).then((ok) => {
+      if (ok) save(KEY_CATCHES, catches);   // allège le localStorage maintenant que les photos sont à l'abri
+      refreshList();
+    });
   }
 })();

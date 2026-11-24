@@ -51,7 +51,7 @@ docker run -d --name carnet-peche -p 8080:80 profish2026
 2. Ouvrez `https://<utilisateur>.github.io/<depot>/` sur votre téléphone (HTTPS fourni).
 
 ## Notes
-- Les photos sont redimensionnées (800 px max) ; le localStorage est limité à ~5 Mo, pensez à exporter régulièrement.
+- Les photos (1024 px max) sont stockées dans **IndexedDB**, hors de la limite de ~5 Mo du localStorage ; les anciennes photos sont migrées automatiquement au premier chargement. Le fichier de sauvegarde les contient toujours : pensez à exporter régulièrement.
 - Marées : modèle Open-Meteo d'environ 8 km, indicatif et peu précis près des côtes (ne remplace pas un annuaire des marées). Les coefficients ne sont pas disponibles.
 - Hors ligne : le balisage OpenSeaMap et la bathymétrie ne sont mis en cache que s'ils ont été consultés ; les tuiles hors zone téléchargée s'affichent vides.
 - Les données sont propres au navigateur et à l'origine (URL) utilisés.

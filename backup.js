@@ -91,6 +91,7 @@
 
   // ---------- Sauvegarder ----------
   $('btn-backup').addEventListener('click', () => {
+    if (!A.photosReady()) { toast('Chargement des photos… réessayez dans un instant.'); return; }
     const f = makeFile('carnet-peche');
     download(f.blob, f.name);
     markBackup(f.data.catches);
@@ -104,6 +105,7 @@
   };
   if (canShareFiles()) $('btn-share').classList.remove('hidden');
   $('btn-share').addEventListener('click', async () => {
+    if (!A.photosReady()) { toast('Chargement des photos… réessayez dans un instant.'); return; }
     const f = makeFile('carnet-peche');
     const file = new File([f.json], f.name, { type: 'application/json' });
     try {
@@ -186,8 +188,10 @@
     location.reload(); // l'application relit toutes ses données au démarrage
   }
 
-  $('restore-merge').addEventListener('click', () => {
+  $('restore-merge').addEventListener('click', async () => {
     if (!pending) return;
+    if (!A.photosReady()) { toast('Chargement des photos… réessayez dans un instant.'); return; }
+
     const cur = A.getCatches().slice();
     const ids = new Set(cur.map((c) => c.id));
     let added = 0;
@@ -197,28 +201,32 @@
     pending.spots.forEach((s) => { if (!sid.has(s.id)) { spots.push(s); sid.add(s.id); added++; } });
     const trips = read(KEY_TRIPS, []).slice(); const tid = new Set(trips.map((t) => t.id));
     pending.trips.forEach((t) => { if (!tid.has(t.id)) { trips.push(t); tid.add(t.id); added++; } });
-    if (!write(KEY_CATCHES, cur) || !write(KEY_CUSTOM, custom) || !write(KEY_SPOTS, spots) || !write(KEY_TRIPS, trips)) {
+    await A.storeCatches(cur);
+    if (!write(KEY_CATCHES, A.stripForStorage(cur)) || !write(KEY_CUSTOM, custom) || !write(KEY_SPOTS, spots) || !write(KEY_TRIPS, trips)) {
       toast('Stockage plein : rien n’a été modifié.');
       return;
     }
     finish(added ? `${added} élément${added > 1 ? 's' : ''} ajouté${added > 1 ? 's' : ''} depuis la sauvegarde (prises, spots et sorties).` : 'Rien à ajouter : tout était déjà présent.');
   });
 
-  $('restore-replace').addEventListener('click', () => {
+  $('restore-replace').addEventListener('click', async () => {
     if (!pending) return;
+    if (!A.photosReady()) { toast('Chargement des photos… réessayez dans un instant.'); return; }
+
     // 1) filet de sécurité : sauvegarde de l'état actuel avant d'écraser
     if (A.getCatches().length) {
       const safety = makeFile('carnet-peche-avant-restauration');
       download(safety.blob, safety.name);
     }
     // 2) remplacement, avec retour arrière si le stockage est plein
+    await A.storeCatches(pending.catches, true); // photos dans IndexedDB avant d'alléger le localStorage
     const keys = pecheKeys().filter((k) => k !== KEY_BK);
     const snap = {};
     keys.forEach((k) => { snap[k] = localStorage.getItem(k); });
     const custom = mergeCustom([], pending.customFish, pending.catches);
     try {
       keys.forEach((k) => localStorage.removeItem(k));
-      localStorage.setItem(KEY_CATCHES, JSON.stringify(pending.catches));
+      localStorage.setItem(KEY_CATCHES, JSON.stringify(A.stripForStorage(pending.catches)));
       localStorage.setItem(KEY_CUSTOM, JSON.stringify(custom));
       localStorage.setItem(KEY_SPOTS, JSON.stringify(pending.spots));
       localStorage.setItem(KEY_TRIPS, JSON.stringify(pending.trips));
